@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
+import 'package:android/helpers/shared_pref_helper.dart';
+import 'package:android/providers/api.dart';
 import 'dart:async';
 
 class LoginPage extends StatefulWidget {
@@ -15,8 +17,19 @@ class LoginPageState extends State<LoginPage> {
   
   @override
   void initState(){
+    checkIfLoggedIn();
     super.initState();
     Timer(const Duration(seconds: 3), ()=>Navigator.pushReplacement(context, MaterialPageRoute(builder:(context) => SecondScreen())));
+  }
+  
+  void checkIfLoggedIn() async {
+    Future.delayed(Duration(seconds: 3), () async {
+      final token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        Navigator.pushNamed(context, '/appointments');
+      }
+    });
+    return;
   }
   
   @override
@@ -178,6 +191,7 @@ class SecondScreen extends StatelessWidget {
                     String username = userNameController.text;
                     String password = passwordController.text;
                     if (username == 'testUser' && password == 'test1234') {
+                      await Api.loginUser();
                       Navigator.pushNamed(context, '/appointments');
                     }
                   },
