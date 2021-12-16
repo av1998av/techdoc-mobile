@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/appointment.dart';
+import '../navbar.dart';
 
 class AppointmentPage extends StatefulWidget {
   const AppointmentPage({Key? key}) : super(key: key);
@@ -91,8 +92,7 @@ class AppointmentPageState extends State<AppointmentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Appointments'),
-        automaticallyImplyLeading: false,
+        title: Text('Appointments')
       ),
       body: Column(
         children: [
@@ -154,6 +154,7 @@ class AppointmentPageState extends State<AppointmentPage> {
           
         ],
       ),
+      drawer: const NavBar(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.black,
         child: Icon(Icons.add),

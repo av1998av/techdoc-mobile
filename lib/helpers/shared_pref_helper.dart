@@ -12,4 +12,9 @@ class SharePreferenceHelper{
     return pref.getString("token") ?? '';
   }
   
+  static Future<bool> logout() async {
+    final pref = await SharedPreferences.getInstance();
+    return pref.clear();
+  }
+   
 }

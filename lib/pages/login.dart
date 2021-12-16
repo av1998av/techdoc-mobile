@@ -26,7 +26,7 @@ class LoginPageState extends State<LoginPage> {
     Future.delayed(Duration(seconds: 3), () async {
       final token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        Navigator.pushNamed(context, '/appointments');
+        Navigator.pushReplacementNamed(context, '/appointments');
       }
     });
     return;
@@ -192,7 +192,7 @@ class SecondScreen extends StatelessWidget {
                     String password = passwordController.text;
                     if (username == 'testUser' && password == 'test1234') {
                       await Api.loginUser();
-                      Navigator.pushNamed(context, '/appointments');
+                      Navigator.pushReplacementNamed(context, '/appointments');
                     }
                   },
                 )
