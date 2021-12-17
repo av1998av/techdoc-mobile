@@ -30,10 +30,12 @@ class Api{
     }
   }
   
-  static Future<List> fetchPatients() async {
+  static Future<List> fetchPatients(String token) async {
     List patients = [];
-    var url = baseUrl + "patients";
-    var response = await http.get(Uri.parse(url));
+    var url = baseUrl + "patient";
+    var response = await http.get(Uri.parse(url), headers : {
+      "Authorization" : token
+    });
     if (response.statusCode == 200){
       patients = json.decode(response.body)['patients'];
     }
