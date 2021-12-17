@@ -1,14 +1,33 @@
+// ignore_for_file: avoid_print
+
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:http/http.dart';
+
 class Api{
   
-  static const String baseUrl = 'http://localhost:3000/';
+  static const String baseUrl = 'http://10.0.2.2:3000/';
   
-  static Future<void> loginUser() async {
-    String token = "random string";
-    await SharePreferenceHelper.setUserToken(token);
+  static Future<void> loginUser(String username, String password) async {
+    var body = {
+      "username" : username,
+      "password" : password
+    };
+    print(body);
+    var response = await post(
+      Uri.parse(baseUrl + "user/signin"), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: json.encode(body),
+    );
+    print(json.decode(response.body));
+    if(response.statusCode == 200){
+      var token = json.decode(response.body)['token'];    
+      await SharePreferenceHelper.setUserToken(token);  
+    }
   }
   
   static Future<List> fetchPatients() async {

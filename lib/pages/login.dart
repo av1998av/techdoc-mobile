@@ -190,8 +190,8 @@ class SecondScreen extends StatelessWidget {
                   onTap: () async {
                     String username = userNameController.text;
                     String password = passwordController.text;
-                    if (username == 'testUser' && password == 'test1234') {
-                      await Api.loginUser();
+                    if (username != '' && password != '') {
+                      await Api.loginUser(username,password);
                       Navigator.pushReplacementNamed(context, '/appointments');
                     }
                   },
