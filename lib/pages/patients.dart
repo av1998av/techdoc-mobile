@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/providers/api.dart';
@@ -32,7 +30,6 @@ class PatientPageState extends State<PatientPage> {
         patients = await Api.fetchPatients(token);
         setState(() {
           patients = patients;
-          print(patients);
           isLoading = false;
         });
       }

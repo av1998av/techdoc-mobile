@@ -30,6 +30,30 @@ class Api{
     }
   }
   
+  static Future<bool> addDrug(String name, String unit, int cost, String token) async {
+    print(token);
+    var body = {
+      "name" : name,
+      "cost" : cost,
+      "unit" : unit
+    };
+    var response = await post(
+      Uri.parse(baseUrl + "drug"), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization" : token
+      },
+      body: json.encode(body),
+    );
+    print(json.decode(response.body));
+    if(response.statusCode == 200){
+      return true; 
+    }
+    else{
+      return false;
+    }
+  }
+  
   static Future<List> fetchPatients(String token) async {
     List patients = [];
     var url = baseUrl + "patient";
@@ -42,17 +66,19 @@ class Api{
     return patients;
   }
   
-  static Future<List> fetchDrugs() async {
+  static Future<List> fetchDrugs(String token) async {
     List drugs = [];
-    var url = baseUrl + "drugs";
-    var response = await http.get(Uri.parse(url));
+    var url = baseUrl + "drug";
+    var response = await http.get(Uri.parse(url), headers : {
+      "Authorization" : token
+    });
     if (response.statusCode == 200){
       drugs = json.decode(response.body)['drugs'];
     }
     return drugs;
   }
   
-  static Future<List> fetchAppointments() async {
+  static Future<List> fetchAppointments(String token) async {
     List appointments = [];
     var url = baseUrl + "appointments";
     var response = await http.get(Uri.parse(url));
@@ -62,10 +88,12 @@ class Api{
     return appointments;
   }
   
-  static Future<List> fetchBills() async {
+  static Future<List> fetchBills(String token) async {
     List bills = [];
-    var url = baseUrl + "bills";
-    var response = await http.get(Uri.parse(url));
+    var url = baseUrl + "bill";
+    var response = await http.get(Uri.parse(url), headers : {
+      "Authorization" : token
+    });
     if (response.statusCode == 200){
       bills = json.decode(response.body)['bills'];
     }
