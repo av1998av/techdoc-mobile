@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:android/helpers/shared_pref_helper.dart';
+import 'package:android/models/patient.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -39,6 +40,53 @@ class Api{
     };
     var response = await post(
       Uri.parse(baseUrl + "drug"), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization" : token
+      },
+      body: json.encode(body),
+    );
+    print(json.decode(response.body));
+    if(response.statusCode == 200){
+      return true; 
+    }
+    else{
+      return false;
+    }
+  }
+  
+  static Future<bool> addPatient(Patient patient, String token) async {
+    var body = {};
+    if(patient.preferredCommunication == 'email'){
+      body = {
+        "name" : patient.name,
+        "dob" : patient.dob,
+        "bloodGroup" : patient.bloodGroup,
+        "preferredCommunication" : patient.preferredCommunication,
+        "gender" : patient.gender,
+        "email" : patient.email,
+        "allergies" : patient.allergies,
+        "notes" : patient.notes,
+        "height" : patient.height,
+        "weight" : patient.height,
+      };
+    }
+    else if(patient.preferredCommunication == 'phone'){
+      body = {
+        "name" : patient.name,
+        "dob" : patient.dob,
+        "bloodGroup" : patient.bloodGroup,
+        "preferredCommunication" : patient.preferredCommunication,
+        "gender" : patient.gender,
+        "phone" : patient.phone,
+        "allergies" : patient.allergies,
+        "notes" : patient.notes,
+        "height" : patient.height,
+        "weight" : patient.height,
+      };
+    }
+    var response = await post(
+      Uri.parse(baseUrl + "patient"), headers : {
         "Accept": "application/json",
         "Content-Type": "application/json",
         "Authorization" : token
