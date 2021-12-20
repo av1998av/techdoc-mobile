@@ -1,9 +1,11 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:android/providers/api.dart';
+import 'package:android/helpers/shared_pref_helper.dart';
 import '../models/appointment.dart';
 import '../navbar.dart';
+import 'package:intl/intl.dart';
 
 class AppointmentPage extends StatefulWidget {
   const AppointmentPage({Key? key}) : super(key: key);
@@ -13,78 +15,95 @@ class AppointmentPage extends StatefulWidget {
 }
 
 class AppointmentPageState extends State<AppointmentPage> {
-  late SharedPreferences logindata;
-  late final ValueNotifier<List<Appointment>> _selectedEvents;
-  CalendarFormat _calendarFormat = CalendarFormat.month;
-  RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOff; 
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  DateTime? _rangeStart;
-  DateTime? _rangeEnd;
-  final TextEditingController _eventController = TextEditingController();
-  late bool newuser;
+  List<Appointment> allAppointments = [];
+  late final ValueNotifier<List<Appointment>> selectedAppointments;
+  CalendarFormat calendarFormat = CalendarFormat.month;
+  RangeSelectionMode rangeSelectionMode = RangeSelectionMode.toggledOff; 
+  DateTime focusedDay = DateTime.now();
+  DateTime? selectedDay;
+  DateTime? rangeStart;
+  DateTime? rangeEnd;
+  bool isLoading = false;
+  String token = '';
+  final TextEditingController eventController = TextEditingController();
   bool isLoaded = false;
   
   @override
   void initState() {
     super.initState();
-    _selectedDay = _focusedDay;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    fetchAllAppointments();
+    selectedDay = focusedDay;
+    selectedAppointments = ValueNotifier(getAppointmentsForDay(selectedDay!));
   }
   
   @override
   void dispose() {
-    _eventController.dispose();
-    _selectedEvents.dispose();
+    eventController.dispose();
+    selectedAppointments.dispose();
     super.dispose();
   }
-
-  List<Appointment> _getEventsForDay(DateTime day) {
+  
+  List<Appointment> getAppointmentsForDay(DateTime day) {
     // Implementation example
-    return kEvents[day] ?? [];
+    // return appointments[day] ?? [];
+    return allAppointments.where((appointment) => DateFormat('yyy-MM-dd').format(appointment.date) == DateFormat('yyy-MM-dd').format(day)).toList();
   }
   
-  
-
-  List<Appointment> _getEventsForRange(DateTime start, DateTime end) {
+  List<Appointment> getAppointmentsForRange(DateTime start, DateTime end) {
     // Implementation example
     final days = daysInRange(start, end);
 
     return [
-      for (final d in days) ..._getEventsForDay(d),
+      for (final d in days) ...getAppointmentsForDay(d),
     ];
   }
-  
-  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    if (!isSameDay(_selectedDay, selectedDay)) {
-      setState(() {
-        _selectedDay = selectedDay;
-        _focusedDay = focusedDay;
-        _rangeStart = null; // Important to clean those
-        _rangeEnd = null;
-        _rangeSelectionMode = RangeSelectionMode.toggledOff;
-      });
 
-      _selectedEvents.value = _getEventsForDay(selectedDay);
-    }
+  fetchAllAppointments() async {
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        allAppointments = await Api.fetchAllAppointments(token);        
+        token = token;
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
   }
 
-  void _onRangeSelected(DateTime? start, DateTime? end, DateTime focusedDay) {
+  void onDaySelected(DateTime incomingSelectedDay, DateTime focusedDay) {
+    if (!isSameDay(selectedDay, incomingSelectedDay)) {
+      setState(() {
+        selectedDay = incomingSelectedDay;
+        focusedDay = focusedDay;
+        rangeStart = null; // Important to clean those
+        rangeEnd = null;
+        rangeSelectionMode = RangeSelectionMode.toggledOff;
+      });
+
+      selectedAppointments.value = getAppointmentsForDay(incomingSelectedDay);
+    }
+  }
+  
+  void onRangeSelected(DateTime? start, DateTime? end, DateTime focusedDay) {
     setState(() {
-      _selectedDay = null;
-      _focusedDay = focusedDay;
-      _rangeStart = start;
-      _rangeEnd = end;
-      _rangeSelectionMode = RangeSelectionMode.toggledOn;
+      selectedDay = null;
+      focusedDay = focusedDay;
+      rangeStart = start;
+      rangeEnd = end;
+      rangeSelectionMode = RangeSelectionMode.toggledOn;
     });
 
     // `start` or `end` could be null
     if (start != null && end != null) {
-      _selectedEvents.value = _getEventsForRange(start, end);
+      selectedAppointments.value = getAppointmentsForRange(start, end);
     } else if (start != null) {
-      _selectedEvents.value = _getEventsForDay(start);
+      selectedAppointments.value = getAppointmentsForDay(start);
     } else if (end != null) {
-      _selectedEvents.value = _getEventsForDay(end);
+      selectedAppointments.value = getAppointmentsForDay(end);
     }
   }
   
@@ -94,66 +113,7 @@ class AppointmentPageState extends State<AppointmentPage> {
       appBar: AppBar(
         title: Text('Appointments')
       ),
-      body: Column(
-        children: [
-          TableCalendar<Appointment>(
-            firstDay: kFirstDay,
-            lastDay: kLastDay,
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            rangeStartDay: _rangeStart,
-            rangeEndDay: _rangeEnd,
-            calendarFormat: _calendarFormat,
-            rangeSelectionMode: _rangeSelectionMode,
-            eventLoader: _getEventsForDay,
-            startingDayOfWeek: StartingDayOfWeek.monday,
-            calendarStyle: CalendarStyle(
-              // Use `CalendarStyle` to customize the UI
-              outsideDaysVisible: false,
-            ),
-            onDaySelected: _onDaySelected,
-            onRangeSelected: _onRangeSelected,
-            onFormatChanged: (format) {
-              if (_calendarFormat != format) {
-                setState(() {
-                  _calendarFormat = format;
-                });
-              }
-            },
-            onPageChanged: (focusedDay) {
-              _focusedDay = focusedDay;
-            },
-          ),
-          const SizedBox(height: 8.0),
-          Expanded(
-            child: ValueListenableBuilder<List<Appointment>>(
-              valueListenable: _selectedEvents,
-              builder: (context, value, _) {
-                return ListView.builder(
-                  itemCount: value.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 4.0,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: ListTile(
-                        onTap: () => print('${value[index]}'),
-                        title: Text(value[index].patientName),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          
-        ],
-      ),
+      body: getBody(),
       drawer: const NavBar(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.black,
@@ -167,32 +127,32 @@ class AppointmentPageState extends State<AppointmentPage> {
       context: context,
       builder: (context) => AlertDialog(
       backgroundColor: Colors.white,
-      title: Text("Add Events"),
-      content: TextFormField(controller: _eventController,),
+      title: Text("Add Appointment"),
+      content: TextFormField(controller: eventController,),
       actions: <Widget>[
         TextButton(
           child: Text("Ok"),
           onPressed: (){
-            if(_eventController.text.isEmpty){
+            if(eventController.text.isEmpty){
               Navigator.pop(context);
               return;
             }
             else{
-              if(kEvents[_selectedDay] != null){
-                kEvents[_selectedDay]!.add(Appointment(_eventController.text, 'Scheduled'));
+              if(appointments[selectedDay] != null){
+                appointments[selectedDay]!.add(Appointment(eventController.text, 'Scheduled', selectedDay!));
                 setState((){});
                 Navigator.pop(context);
-                _eventController.clear();
+                eventController.clear();
                 return; 
               }
               else{
                 List<Appointment> newAppointments = [];
-                newAppointments.add(Appointment(_eventController.text, 'Scheduled'));
-                DateTime dateTime = DateTime.utc(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day);
-                kEvents[dateTime] = newAppointments;
-                _selectedEvents.value = _getEventsForDay(dateTime);
+                newAppointments.add(Appointment(eventController.text, 'Scheduled', selectedDay!));
+                DateTime dateTime = DateTime.utc(selectedDay!.year, selectedDay!.month, selectedDay!.day);
+                appointments[dateTime] = newAppointments;
+                selectedAppointments.value = getAppointmentsForDay(dateTime);
                 Navigator.pop(context);
-                _eventController.clear();
+                eventController.clear();
                 return;
               }
             }
@@ -201,5 +161,104 @@ class AppointmentPageState extends State<AppointmentPage> {
         TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
       ],
     ));
+  }
+  
+  Widget getBody(){
+    if(isLoading){
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    return Column(
+      children: [
+        TableCalendar<Appointment>(
+            firstDay: kFirstDay,
+            lastDay: kLastDay,
+            focusedDay: focusedDay,
+            selectedDayPredicate: (day) => isSameDay(selectedDay, day),
+            rangeStartDay: rangeStart,
+            rangeEndDay: rangeEnd,
+            calendarFormat: calendarFormat,
+            rangeSelectionMode: rangeSelectionMode,
+            eventLoader: getAppointmentsForDay,
+            startingDayOfWeek: StartingDayOfWeek.monday,
+            calendarStyle: CalendarStyle(
+              // Use `CalendarStyle` to customize the UI
+              outsideDaysVisible: false,
+            ),
+            onDaySelected: onDaySelected,
+            onRangeSelected: onRangeSelected,
+            onFormatChanged: (format) {
+              if (calendarFormat != format) {
+                setState(() {
+                  calendarFormat = format;
+                });
+              }
+            },
+            onPageChanged: (focusedDay) {
+              focusedDay = focusedDay;
+            },
+          ),
+        const SizedBox(height: 8.0),
+        Expanded(
+          child: ValueListenableBuilder<List<Appointment>>(
+            valueListenable: selectedAppointments,
+            builder: (context, value, _) {
+              return ListView.builder(
+                itemCount: value.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 4.0,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(),
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: ListTile(
+                      // onTap: () => print('${value[index]}'),
+                      title: Text(value[index].patientName),
+                      subtitle: Text(value[index].status),
+                      onLongPress: () =>{
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Cancel/Complete Appointment'),
+                              content: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                              ),
+                              actions: [
+                                TextButton(
+                                  style: ButtonStyle(
+                                    foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                                  ),
+                                  onPressed: () async { 
+                                  
+                                  },
+                                  child: const Text('Complete'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  }, 
+                                  child: const Text('Cancel')
+                                )
+                              ],
+                            );
+                          }
+                        )
+                      },
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+        
+      ],
+    );
   }
 }

@@ -1,9 +1,11 @@
 // ignore_for_file: avoid_print
 
 import 'package:android/helpers/shared_pref_helper.dart';
+import 'package:android/models/appointment.dart';
 import 'package:android/models/patient.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 import 'package:http/http.dart';
 
@@ -126,13 +128,29 @@ class Api{
     return drugs;
   }
   
-  static Future<List> fetchAppointments(String token) async {
-    List appointments = [];
-    var url = baseUrl + "appointments";
-    var response = await http.get(Uri.parse(url));
+  static Future<List<Appointment>> fetchAppointments(String token, DateTime start, DateTime end) async {
+    List<Appointment> appointments = [];
+    var url = baseUrl + "appointment?" + "start=" + DateFormat('yyyy-MM-dd').format(start) + " 00:00:00&end=" + DateFormat('yyyy-MM-dd').format(end)+ " 00:00:00";
+    print(url);
+    var response = await http.get(Uri.parse(url), headers : {
+      "Authorization" : token
+    });
     if (response.statusCode == 200){
-      appointments = json.decode(response.body)['appointments'];
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['Patient']['name'], appointment['status'], start)).toList();
     }
+    return appointments;
+  }
+  
+  static Future<List<Appointment>> fetchAllAppointments(String token) async {
+    List<Appointment> appointments = [];
+    var url = baseUrl + "appointment";
+    var response = await http.get(Uri.parse(url), headers : {
+      "Authorization" : token
+    });
+    if (response.statusCode == 200){
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['Patient']['name'], appointment['status'], DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(appointment['datetime']))).toList();
+    }
+    
     return appointments;
   }
   

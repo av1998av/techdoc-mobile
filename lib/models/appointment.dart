@@ -3,8 +3,9 @@ import 'dart:collection';
 class Appointment {
   final String patientName;
   final String status;
+  final DateTime date;
 
-  const Appointment(this.patientName, this.status);
+  const Appointment(this.patientName, this.status, this.date);
   
   @override
   String toString() {
@@ -12,7 +13,7 @@ class Appointment {
   }
 }
 
-LinkedHashMap<DateTime, List<Appointment>> kEvents = LinkedHashMap<DateTime, List<Appointment>>();
+LinkedHashMap<DateTime, List<Appointment>> appointments = LinkedHashMap<DateTime, List<Appointment>>();
 
 
 List<DateTime> daysInRange(DateTime first, DateTime last) {
