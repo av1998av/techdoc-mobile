@@ -1,4 +1,5 @@
 class Patient {
+  final String id;
   final String name;
   final String dob;
   final String bloodGroup;
@@ -11,6 +12,6 @@ class Patient {
   final int height;
   final int weight;
   
-  const Patient(this.name, this.dob, this.bloodGroup, this.gender, this.phone, this.email, this.allergies, this.notes, this.preferredCommunication, this.height, this.weight) ;
+  const Patient(this.id, this.name, this.dob, this.bloodGroup, this.gender, this.phone, this.email, this.allergies, this.notes, this.preferredCommunication, this.height, this.weight) ;
   
 }

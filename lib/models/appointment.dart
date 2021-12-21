@@ -2,10 +2,12 @@ import 'dart:collection';
 
 class Appointment {
   final String patientName;
+  final String patientId;
   final String status;
   final DateTime date;
+  final int id;
 
-  const Appointment(this.patientName, this.status, this.date);
+  const Appointment(this.id, this.patientName, this.patientId, this.status, this.date);
   
   @override
   String toString() {

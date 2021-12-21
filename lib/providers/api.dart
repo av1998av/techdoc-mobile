@@ -104,14 +104,14 @@ class Api{
     }
   }
   
-  static Future<List> fetchPatients(String token) async {
-    List patients = [];
+  static Future<List<Patient>> fetchPatients(String token) async {
+    List<Patient> patients = [];
     var url = baseUrl + "patient";
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
     if (response.statusCode == 200){
-      patients = json.decode(response.body)['patients'];
+      patients = (json.decode(response.body)['patients'] as List).map((patient) => Patient(patient['id'], patient['name'], patient['dob'], patient['bloodGroup'], patient['gender'], patient['phone'], patient['email'], patient['allergies'], patient['notes'], patient['preferredCommunication'], patient['height'], patient['weight'])).toList();
     }
     return patients;
   }
@@ -136,7 +136,7 @@ class Api{
       "Authorization" : token
     });
     if (response.statusCode == 200){
-      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['Patient']['name'], appointment['status'], start)).toList();
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], start)).toList();
     }
     return appointments;
   }
@@ -148,10 +148,64 @@ class Api{
       "Authorization" : token
     });
     if (response.statusCode == 200){
-      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['Patient']['name'], appointment['status'], DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(appointment['datetime']))).toList();
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(appointment['datetime']))).toList();
     }
     
     return appointments;
+  }
+  
+  static Future<bool> addAppointment(Appointment appointment, String token) async {
+    var body = {
+      "patientId" : appointment.patientId,
+      "date" : {
+        "day" :  appointment.date.day,
+        "month" : appointment.date.month,
+        "year" : appointment.date.year
+      }
+    };
+    var response = await post(
+      Uri.parse(baseUrl + "appointment"), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization" : token
+      },
+      body: json.encode(body),
+    );
+    if(response.statusCode == 200){
+      return true; 
+    }
+    else{
+      return false;
+    }
+  }
+  
+  static Future<bool> cancelAppointment(String token, int id) async {
+    var url = baseUrl + "appointment/cancel/"+id.toString();
+    print(url);
+    var response = await http.post(Uri.parse(url), headers : {
+      "Authorization" : token
+    });
+    if (response.statusCode == 200){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+  
+  static Future<bool> completeAppointment(String token, int id) async {
+    var url = baseUrl + "appointment/complete/"+id.toString();
+    print(url);
+    var response = await http.post(Uri.parse(url), headers : {
+      "Authorization" : token
+    });
+    print(response.body);
+    if (response.statusCode == 200){
+      return true;
+    }
+    else{
+      return false;
+    }
   }
   
   static Future<List> fetchBills(String token) async {
