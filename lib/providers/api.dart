@@ -2,6 +2,7 @@
 
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/models/appointment.dart';
+import 'package:android/models/bill.dart';
 import 'package:android/models/patient.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -208,14 +209,14 @@ class Api{
     }
   }
   
-  static Future<List> fetchBills(String token) async {
-    List bills = [];
+  static Future<List<Bill>> fetchBills(String token) async {
+    List<Bill> bills = [];
     var url = baseUrl + "bill";
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
     if (response.statusCode == 200){
-      bills = json.decode(response.body)['bills'];
+      bills = (json.decode(response.body)['bills'] as List).map((bill) => Bill(bill['Patient']['name'],bill['total'],bill['paymentMethod'],bill['fileLink'])).toList();
     }
     return bills;
   }

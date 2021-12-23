@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:android/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
@@ -12,7 +14,7 @@ class PatientPage extends StatefulWidget {
 }
 
 class PatientPageState extends State<PatientPage> {
-  List patients = [];
+  List<Patient> patients = [];
   bool isLoading = false;
   final nameController = TextEditingController();
   final dobController = TextEditingController();
@@ -216,9 +218,9 @@ class PatientPageState extends State<PatientPage> {
       return getCard(patients[index]);
     });
   }
-  Widget getCard(patient){
-    var fullName = patient['name'];
-    var email = patient['email'];
+  Widget getCard(Patient patient){
+    var fullName = patient.name;
+    var contact = (patient.email == null) ? patient.phone : patient.email;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -230,7 +232,7 @@ class PatientPageState extends State<PatientPage> {
                 children: <Widget>[
                   Text(fullName.toString(), style: const TextStyle(fontSize: 17)),
                   const SizedBox(height: 10,),
-                  Text(email.toString(), style: const TextStyle(color: Colors.grey)),
+                  Text(contact.toString(), style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ],
