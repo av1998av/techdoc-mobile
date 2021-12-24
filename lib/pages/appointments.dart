@@ -152,48 +152,48 @@ class AppointmentPageState extends State<AppointmentPage> {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-      backgroundColor: Colors.white,
-      title: Text("Add Appointment"),
-      // content: TextFormField(controller: eventController,),
-      content: TypeAheadField(
-        textFieldConfiguration: TextFieldConfiguration(
-          autofocus: true,
-          decoration: InputDecoration(
-            border: OutlineInputBorder()
+        backgroundColor: Colors.white,
+        title: Text("Add Appointment"),
+        content: TypeAheadField(
+          textFieldConfiguration: TextFieldConfiguration(
+            autofocus: true,
+            decoration: InputDecoration(
+              border: OutlineInputBorder()
+            ),
+            controller: eventController
           ),
-          controller: eventController
+          suggestionsCallback: (pattern) async {
+            return getSuggestions(pattern);
+          },
+          itemBuilder: (context, Patient patient) {
+            return ListTile(
+              title: Text(patient.name),
+              subtitle: Text(patient.id)
+            );
+          }, 
+          onSuggestionSelected: (Patient patient) {
+            eventController.text = patient.id;
+          },
         ),
-        suggestionsCallback: (pattern) async {
-          return getSuggestions(pattern);
-        },
-        itemBuilder: (context, Patient patient) {
-          return ListTile(
-            title: Text(patient.name),
-            subtitle: Text(patient.id)
-          );
-        }, 
-        onSuggestionSelected: (Patient patient) {
-          eventController.text = patient.id;
-        },
-      ),
-      actions: <Widget>[
-        TextButton(
-          child: Text("Ok"),
-          onPressed: (){
-            if(eventController.text.isEmpty){
-              Navigator.pop(context);
-              return;
+        actions: <Widget>[
+          TextButton(
+            child: Text("Ok"),
+            onPressed: (){
+              if(eventController.text.isEmpty){
+                Navigator.pop(context);
+                return;
+              }
+              else{
+                var appointment = Appointment(0,'',eventController.text,'',selectedDay!);
+                Navigator.pop(context);
+                addAppointment(appointment);              
+              }
             }
-            else{
-              var appointment = Appointment(0,'',eventController.text,'',selectedDay!);
-              Navigator.pop(context);
-              addAppointment(appointment);              
-            }
-          }
-        ),
-        TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
-      ],
-    ));
+          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+        ],
+      )
+    );
   }
   
   Widget getBody(){

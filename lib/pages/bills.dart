@@ -1,7 +1,13 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'dart:math';
+
 import 'package:android/models/bill.dart';
+import 'package:android/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:url_launcher/link.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:android/providers/api.dart';
 import '../navbar.dart';
@@ -15,11 +21,19 @@ class BillPage extends StatefulWidget {
 
 class BillPageState extends State<BillPage> {
   List<Bill> bills = [];
+  List<Patient> patients = [];
   bool isLoading = false;
+  final TextEditingController patientController = TextEditingController();
+  final TextEditingController numberOfItemsController = TextEditingController();
+  
+  List<Patient> getSuggestions(pattern) {
+    return patients.where((patient) => patient.name.toLowerCase().contains(pattern)).toList();
+  }
   
   @override
   void initState(){
     super.initState();
+    numberOfItemsController.text = '1';
     fetchBills();
   }
   
@@ -31,6 +45,7 @@ class BillPageState extends State<BillPage> {
       final token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
         bills = await Api.fetchBills(token);
+        patients = await Api.fetchPatients(token);      
         setState(() {
           bills = bills;
           isLoading = false;
@@ -52,10 +67,124 @@ class BillPageState extends State<BillPage> {
         title: const Text('Patients')
       ),
       body: getBody(),
-      floatingActionButton: FloatingActionButton(onPressed: () {  },),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        child: Icon(Icons.add),
+        onPressed: showAddDialog,
+      ),
       drawer: const NavBar(),
     );
   }
+  
+  showAddDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        scrollable: true,
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.all(10),
+        title: Text("New Bill"),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width*0.75,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Form(
+              child: Column(
+                children: <Widget>[
+                  TypeAheadField(
+                    textFieldConfiguration: TextFieldConfiguration(
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        labelText: 'Patient',
+                        border: OutlineInputBorder()
+                      ),
+                      controller: patientController
+                    ),
+                    suggestionsCallback: (pattern) async {
+                      return getSuggestions(pattern);
+                    },
+                    itemBuilder: (context, Patient patient) {
+                      return ListTile(
+                        title: Text(patient.name),
+                        subtitle: Text(patient.id)
+                      );
+                    }, 
+                    onSuggestionSelected: (Patient patient) {
+                      patientController.text = patient.id;
+                    },
+                  ),
+                  const SizedBox(height: 10,),
+                  TextFormField(
+                    controller: numberOfItemsController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Number of Products',
+                      border: OutlineInputBorder()
+                    ),
+                  ),
+                  for (int i=0;i<max(int.parse(numberOfItemsController.text),1);i++) Container(
+                    padding: EdgeInsets.all(10),
+                    margin: EdgeInsets.only(top:10),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.lightBlue
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(10.0))
+                    ),
+                    child: getForm()
+                  ),
+                ],
+              )
+            )
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text("Ok"),
+            onPressed: (){
+              
+            }
+          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+        ],
+      ),
+    );
+  }
+  
+  Widget getForm(){
+    return Column(
+      children: <Widget>[
+        TextFormField(
+          decoration: const InputDecoration(
+            labelText: 'Drug/Process',
+            border: OutlineInputBorder()
+          ),
+        ),
+        const SizedBox(height: 10,),
+        TextFormField(
+          decoration: const InputDecoration(
+            labelText: 'Price',
+            border: OutlineInputBorder()
+          ),
+        ),
+        const SizedBox(height: 10,),
+        TextFormField(
+          decoration: const InputDecoration(
+            labelText: 'Quantity',
+            border: OutlineInputBorder()
+          ),
+        ),
+        const SizedBox(height: 10,),
+        TextFormField(
+          decoration: const InputDecoration(
+            labelText: 'Cost',
+            border: OutlineInputBorder()
+          ),
+        ),                
+      ]
+    );
+  }
+  
   Widget getBody(){
     if(bills.contains(null) || bills.isEmpty || isLoading){
       return const Center(
