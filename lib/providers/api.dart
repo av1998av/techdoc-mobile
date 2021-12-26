@@ -20,7 +20,6 @@ class Api{
       "username" : username,
       "password" : password
     };
-    print(body);
     var response = await post(
       Uri.parse(baseUrl + "user/signin"), headers : {
         "Accept": "application/json",
@@ -28,7 +27,6 @@ class Api{
       },
       body: json.encode(body),
     );
-    print(json.decode(response.body));
     if(response.statusCode == 200){
       var token = json.decode(response.body)['token'];    
       await SharePreferenceHelper.setUserToken(token);  
@@ -36,7 +34,6 @@ class Api{
   }
   
   static Future<bool> addDrug(String name, String unit, int cost, String token) async {
-    print(token);
     var body = {
       "name" : name,
       "cost" : cost,
@@ -50,7 +47,6 @@ class Api{
       },
       body: json.encode(body),
     );
-    print(json.decode(response.body));
     if(response.statusCode == 200){
       return true; 
     }
@@ -97,7 +93,6 @@ class Api{
       },
       body: json.encode(body),
     );
-    print(json.decode(response.body));
     if(response.statusCode == 200){
       return true; 
     }
@@ -133,7 +128,6 @@ class Api{
   static Future<List<Appointment>> fetchAppointments(String token, DateTime start, DateTime end) async {
     List<Appointment> appointments = [];
     var url = baseUrl + "appointment?" + "start=" + DateFormat('yyyy-MM-dd').format(start) + " 00:00:00&end=" + DateFormat('yyyy-MM-dd').format(end)+ " 00:00:00";
-    print(url);
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
@@ -183,7 +177,6 @@ class Api{
   
   static Future<bool> cancelAppointment(String token, int id) async {
     var url = baseUrl + "appointment/cancel/"+id.toString();
-    print(url);
     var response = await http.post(Uri.parse(url), headers : {
       "Authorization" : token
     });
@@ -197,11 +190,9 @@ class Api{
   
   static Future<bool> completeAppointment(String token, int id) async {
     var url = baseUrl + "appointment/complete/"+id.toString();
-    print(url);
     var response = await http.post(Uri.parse(url), headers : {
       "Authorization" : token
     });
-    print(response.body);
     if (response.statusCode == 200){
       return true;
     }
@@ -217,8 +208,40 @@ class Api{
       "Authorization" : token
     });
     if (response.statusCode == 200){
-      bills = (json.decode(response.body)['bills'] as List).map((bill) => Bill(bill['Patient']['name'],bill['total'],bill['paymentMethod'],bill['fileLink'])).toList();
+      bills = (json.decode(response.body)['bills'] as List).map((bill) => Bill(bill['Patient']['name'],bill['Patient']['id'],bill['total'],bill['paymentMethod'],bill['fileLink'])).toList();
     }
     return bills;
+  }
+  
+  static Future<bool> addBill(Bill bill, List entries, String token) async{
+    var body = {
+      "patientId" : bill.patientId,
+      "total" : bill.total,
+      "paymentMethod" : bill.paymentMethod
+    };
+    List entriesFinal = [];
+    for (var entry in entries) {
+      entriesFinal.add({
+        "name" : entry['name'],
+        "cost" : entry['cost'],
+        "quantity" : entry['quantity'],
+        "drugId" : int.parse(entry['drugId'])
+      });
+    }
+    body['entries'] = entriesFinal;
+    var response = await post(
+      Uri.parse(baseUrl + "bill"), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization" : token
+      },
+      body: json.encode(body),
+    );
+    if(response.statusCode == 200){
+      return true; 
+    }
+    else{
+      return false;
+    }
   }
 }

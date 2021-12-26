@@ -44,7 +44,7 @@ class BillPageState extends State<BillPage> {
   
   @override
   void initState(){
-    numberOfItems = 1;
+    numberNotif.value = 1;
     super.initState();
     fetchBills();
   }
@@ -63,6 +63,22 @@ class BillPageState extends State<BillPage> {
           bills = bills;
           isLoading = false;
         });
+      }
+    });
+  }
+  
+  addBill (Bill bill, List entries) async {
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        var result = await Api.addBill(bill, entries, token);
+        setState(() {
+          isLoading = false;
+        });
+        fetchBills();
       }
     });
   }
@@ -126,18 +142,10 @@ class BillPageState extends State<BillPage> {
                     },
                   ),
                   const SizedBox(height: 10,),
-                  // TextFormField(
-                  //   controller: numberOfItemsController,
-                  //   keyboardType: TextInputType.number,
-                  //   decoration: const InputDecoration(
-                  //     labelText: 'Number of Products',
-                  //     border: OutlineInputBorder()
-                  //   ),
-                  // ),
                   NumericStepButton(
                     maxValue: 20,
                     minValue: 1,
-                    current: max(1,numberOfItems),
+                    current: max(1,numberNotif.value),
                     onChanged: (value) {
                       numberNotif.value = value;                      
                     },
@@ -167,8 +175,21 @@ class BillPageState extends State<BillPage> {
         actions: <Widget>[
           TextButton(
             child: Text("Ok"),
-            onPressed: (){
-              
+            onPressed: () {
+              Navigator.pop(context);
+              List entries = [];
+              int total = 0;
+              var list = Iterable<int>.generate(max(numberNotif.value,1)).toList();
+              for (var item in list) {
+                total = total + int.parse(priceControllers[item].text);
+                entries.add({
+                  "name" : '',
+                  "cost" : priceControllers[item].text,
+                  "quantity" : quantityControllers[item].text,
+                  "drugId" : drugControllers[item].text
+                });
+              }
+              addBill(Bill('',patientController.text,total,'CASH',''),entries);
             }
           ),
           TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
@@ -212,6 +233,9 @@ class BillPageState extends State<BillPage> {
         ),
         const SizedBox(height: 10,),
         TextFormField(
+          onChanged: (text){
+            priceControllers[index].text = (int.parse(costControllers[index].text) * int.parse(text)).toString();
+          },
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(
             labelText: 'Quantity',
@@ -226,7 +250,7 @@ class BillPageState extends State<BillPage> {
             border: OutlineInputBorder()
           ),
           controller: priceControllers[index],
-        ),                
+        ),
       ]
     );
   }
