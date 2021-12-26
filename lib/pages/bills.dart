@@ -2,7 +2,9 @@
 
 import 'dart:math';
 
+import 'package:android/components/counter.dart';
 import 'package:android/models/bill.dart';
+import 'package:android/models/drug.dart';
 import 'package:android/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
@@ -22,18 +24,28 @@ class BillPage extends StatefulWidget {
 class BillPageState extends State<BillPage> {
   List<Bill> bills = [];
   List<Patient> patients = [];
+  List<Drug> drugs = [];
   bool isLoading = false;
+  late int numberOfItems;
+  final numberNotif = ValueNotifier<int>(0);
   final TextEditingController patientController = TextEditingController();
-  final TextEditingController numberOfItemsController = TextEditingController();
+  final List<TextEditingController> drugControllers = List.generate(10, (i) => TextEditingController());
+  final List<TextEditingController> priceControllers = List.generate(10, (i) => TextEditingController());
+  final List<TextEditingController> quantityControllers = List.generate(10, (i) => TextEditingController());
+  final List<TextEditingController> costControllers = List.generate(10, (i) => TextEditingController());
   
-  List<Patient> getSuggestions(pattern) {
+  List<Patient> getPatientSuggestions(pattern) {
     return patients.where((patient) => patient.name.toLowerCase().contains(pattern)).toList();
+  }
+  
+  List<Drug> getDrugSuggestions(pattern) {
+    return drugs.where((drug) => drug.name.toLowerCase().contains(pattern)).toList();
   }
   
   @override
   void initState(){
+    numberOfItems = 1;
     super.initState();
-    numberOfItemsController.text = '1';
     fetchBills();
   }
   
@@ -46,6 +58,7 @@ class BillPageState extends State<BillPage> {
       if(token != ''){
         bills = await Api.fetchBills(token);
         patients = await Api.fetchPatients(token);      
+        drugs = await Api.fetchDrugs(token);      
         setState(() {
           bills = bills;
           isLoading = false;
@@ -64,7 +77,7 @@ class BillPageState extends State<BillPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Patients')
+        title: const Text('Bills')
       ),
       body: getBody(),
       floatingActionButton: FloatingActionButton(
@@ -93,7 +106,6 @@ class BillPageState extends State<BillPage> {
                 children: <Widget>[
                   TypeAheadField(
                     textFieldConfiguration: TextFieldConfiguration(
-                      autofocus: true,
                       decoration: InputDecoration(
                         labelText: 'Patient',
                         border: OutlineInputBorder()
@@ -101,7 +113,7 @@ class BillPageState extends State<BillPage> {
                       controller: patientController
                     ),
                     suggestionsCallback: (pattern) async {
-                      return getSuggestions(pattern);
+                      return getPatientSuggestions(pattern);
                     },
                     itemBuilder: (context, Patient patient) {
                       return ListTile(
@@ -114,25 +126,39 @@ class BillPageState extends State<BillPage> {
                     },
                   ),
                   const SizedBox(height: 10,),
-                  TextFormField(
-                    controller: numberOfItemsController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Number of Products',
-                      border: OutlineInputBorder()
-                    ),
+                  // TextFormField(
+                  //   controller: numberOfItemsController,
+                  //   keyboardType: TextInputType.number,
+                  //   decoration: const InputDecoration(
+                  //     labelText: 'Number of Products',
+                  //     border: OutlineInputBorder()
+                  //   ),
+                  // ),
+                  NumericStepButton(
+                    maxValue: 20,
+                    minValue: 1,
+                    current: max(1,numberOfItems),
+                    onChanged: (value) {
+                      numberNotif.value = value;                      
+                    },
                   ),
-                  for (int i=0;i<max(int.parse(numberOfItemsController.text),1);i++) Container(
-                    padding: EdgeInsets.all(10),
-                    margin: EdgeInsets.only(top:10),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.lightBlue
-                      ),
-                      borderRadius: BorderRadius.all(Radius.circular(10.0))
-                    ),
-                    child: getForm()
-                  ),
+                  ValueListenableBuilder(valueListenable: numberNotif, builder: (context, int value, widget){
+                    return Column(
+                      children: <Widget>[
+                        for (int i=0;i<max(value,1);i++) Container(
+                          padding: EdgeInsets.all(10),
+                          margin: EdgeInsets.only(top:10),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.lightBlue
+                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0))
+                          ),
+                          child: getForm(i)
+                        )
+                      ]
+                    );
+                  }),
                 ],
               )
             )
@@ -151,14 +177,47 @@ class BillPageState extends State<BillPage> {
     );
   }
   
-  Widget getForm(){
+  Widget getForm(int index){    
     return Column(
       children: <Widget>[
+        TypeAheadField(
+          textFieldConfiguration: TextFieldConfiguration(
+            decoration: InputDecoration(
+              labelText: 'Drug/Process',
+              border: OutlineInputBorder()
+            ),
+            controller: drugControllers[index]
+          ),
+          suggestionsCallback: (pattern) async {
+            return getDrugSuggestions(pattern);
+          },
+          itemBuilder: (context, Drug drug) {
+            return ListTile(
+              title: Text(drug.name),
+              subtitle: Text(drug.unit)
+            );
+          }, 
+          onSuggestionSelected: (Drug drug) {
+            drugControllers[index].text = drug.id.toString();
+            costControllers[index].text = drug.cost.toString();
+          },
+        ),
+        const SizedBox(height: 10,),
         TextFormField(
           decoration: const InputDecoration(
-            labelText: 'Drug/Process',
+            labelText: 'Cost',
+            border: OutlineInputBorder(),
+          ),
+          controller: costControllers[index],
+        ),
+        const SizedBox(height: 10,),
+        TextFormField(
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Quantity',
             border: OutlineInputBorder()
           ),
+          controller: quantityControllers[index],
         ),
         const SizedBox(height: 10,),
         TextFormField(
@@ -166,20 +225,7 @@ class BillPageState extends State<BillPage> {
             labelText: 'Price',
             border: OutlineInputBorder()
           ),
-        ),
-        const SizedBox(height: 10,),
-        TextFormField(
-          decoration: const InputDecoration(
-            labelText: 'Quantity',
-            border: OutlineInputBorder()
-          ),
-        ),
-        const SizedBox(height: 10,),
-        TextFormField(
-          decoration: const InputDecoration(
-            labelText: 'Cost',
-            border: OutlineInputBorder()
-          ),
+          controller: priceControllers[index],
         ),                
       ]
     );

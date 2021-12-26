@@ -1,3 +1,4 @@
+import 'package:android/models/drug.dart';
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/providers/api.dart';
@@ -11,7 +12,7 @@ class DrugPage extends StatefulWidget {
 }
 
 class DrugPageState extends State<DrugPage> {
-  List drugs = [];
+  List<Drug> drugs = [];
   bool isLoading = false;
   String token = '';
   final nameController = TextEditingController();
@@ -145,9 +146,9 @@ class DrugPageState extends State<DrugPage> {
     });
   }
   
-  Widget getCard(drug){
-    var fullName = drug['name'];
-    var email = drug['unit'];
+  Widget getCard(Drug drug){
+    var fullName = drug.name;
+    var email = drug.unit;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(10.0),

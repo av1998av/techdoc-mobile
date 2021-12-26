@@ -156,8 +156,8 @@ class AppointmentPageState extends State<AppointmentPage> {
         title: Text("Add Appointment"),
         content: TypeAheadField(
           textFieldConfiguration: TextFieldConfiguration(
-            autofocus: true,
             decoration: InputDecoration(
+              labelText: 'Patient',
               border: OutlineInputBorder()
             ),
             controller: eventController

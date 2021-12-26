@@ -3,6 +3,7 @@
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/models/appointment.dart';
 import 'package:android/models/bill.dart';
+import 'package:android/models/drug.dart';
 import 'package:android/models/patient.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -117,14 +118,14 @@ class Api{
     return patients;
   }
   
-  static Future<List> fetchDrugs(String token) async {
-    List drugs = [];
+  static Future<List<Drug>> fetchDrugs(String token) async {
+    List<Drug> drugs = [];
     var url = baseUrl + "drug";
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
     if (response.statusCode == 200){
-      drugs = json.decode(response.body)['drugs'];
+      drugs = (json.decode(response.body)['drugs'] as List).map((drug) => Drug(drug['id'],drug['name'],drug['cost'],drug['unit'])).toList();
     }
     return drugs;
   }
