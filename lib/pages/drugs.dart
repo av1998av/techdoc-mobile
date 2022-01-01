@@ -1,3 +1,4 @@
+import 'package:android/models/custom_http_response.dart';
 import 'package:android/models/drug.dart';
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
@@ -26,14 +27,36 @@ class DrugPageState extends State<DrugPage> {
   }
   
   fetchDrugs() async {
+    CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        drugs = await Api.fetchDrugs(token);
         token = token;
+        customHttpResponse = await Api.fetchDrugs(token);
+        if(customHttpResponse.status){
+          drugs = customHttpResponse.items.cast();
+        }
+        else{
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(customHttpResponse.message),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }, 
+                    child: const Text('OK')
+                  )
+                ],
+              );
+            }
+          );
+        }
         setState(() {
           isLoading = false;
         });
@@ -42,17 +65,36 @@ class DrugPageState extends State<DrugPage> {
   }
   
   addDrug(String name, int cost, String unit) async {
+    CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        var result = await Api.addDrug(name, unit, cost, token);
+        customHttpResponse = await Api.addDrug(name, unit, cost, token);
         setState(() {
           isLoading = false;
         });
-        fetchDrugs();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){          
+          fetchDrugs();
+        }
       }
     });
   }

@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:android/components/counter.dart';
 import 'package:android/models/bill.dart';
+import 'package:android/models/custom_http_response.dart';
 import 'package:android/models/drug.dart';
 import 'package:android/models/patient.dart';
 import 'package:flutter/material.dart';
@@ -50,15 +51,51 @@ class BillPageState extends State<BillPage> {
   }
   
   fetchBills() async {
+    CustomHttpResponse customBillsHttpResponse;
+    CustomHttpResponse customPatientsHttpResponse;
+    CustomHttpResponse customDrugsHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
       final token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        bills = await Api.fetchBills(token);
-        patients = await Api.fetchPatients(token);      
-        drugs = await Api.fetchDrugs(token);      
+        customBillsHttpResponse = await Api.fetchBills(token);
+        customPatientsHttpResponse = await Api.fetchPatients(token);      
+        customDrugsHttpResponse = await Api.fetchDrugs(token);
+        if(customBillsHttpResponse.status && customPatientsHttpResponse.status && customDrugsHttpResponse.status){
+          patients = customPatientsHttpResponse.items.cast();
+          drugs = customDrugsHttpResponse.items.cast();
+          bills = customBillsHttpResponse.items.cast();
+        }
+        else{
+          String message = '';
+          if(customBillsHttpResponse.status){
+            message = customBillsHttpResponse.message;
+          }
+          else if(customPatientsHttpResponse.status){
+            message = customPatientsHttpResponse.message;
+          }
+          else{
+            message = customDrugsHttpResponse.message;
+          }
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(message),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }, 
+                    child: const Text('OK')
+                  )
+                ],
+              );
+            }
+          );
+        }
         setState(() {
           bills = bills;
           isLoading = false;
@@ -68,17 +105,37 @@ class BillPageState extends State<BillPage> {
   }
   
   addBill (Bill bill, List entries) async {
+    CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        var result = await Api.addBill(bill, entries, token);
+        customHttpResponse = await Api.addBill(bill, entries, token);
+        token = token;
         setState(() {
           isLoading = false;
         });
-        fetchBills();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){          
+          fetchBills();
+        }
       }
     });
   }

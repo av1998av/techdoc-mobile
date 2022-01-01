@@ -3,6 +3,7 @@
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/models/appointment.dart';
 import 'package:android/models/bill.dart';
+import 'package:android/models/custom_http_response.dart';
 import 'package:android/models/drug.dart';
 import 'package:android/models/patient.dart';
 import 'package:http/http.dart' as http;
@@ -15,11 +16,12 @@ class Api{
   
   static const String baseUrl = 'http://10.0.2.2:3000/';
   
-  static Future<void> loginUser(String username, String password) async {
+  static Future<CustomHttpResponse> loginUser(String username, String password) async {
     var body = {
       "username" : username,
       "password" : password
     };
+    CustomHttpResponse customResponse;
     var response = await post(
       Uri.parse(baseUrl + "user/signin"), headers : {
         "Accept": "application/json",
@@ -27,18 +29,25 @@ class Api{
       },
       body: json.encode(body),
     );
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if(response.statusCode == 200){
       var token = json.decode(response.body)['token'];    
-      await SharePreferenceHelper.setUserToken(token);  
+      await SharePreferenceHelper.setUserToken(token);
+      customResponse = CustomHttpResponse(json.decode(response.body)['result'],status,[]);
     }
+    else{
+      customResponse = CustomHttpResponse(json.decode(response.body)['result'],status,[]);
+    }
+    return customResponse;
   }
   
-  static Future<bool> addDrug(String name, String unit, int cost, String token) async {
+  static Future<CustomHttpResponse> addDrug(String name, String unit, int cost, String token) async {
     var body = {
       "name" : name,
       "cost" : cost,
       "unit" : unit
     };
+    CustomHttpResponse customResponse;
     var response = await post(
       Uri.parse(baseUrl + "drug"), headers : {
         "Accept": "application/json",
@@ -47,15 +56,12 @@ class Api{
       },
       body: json.encode(body),
     );
-    if(response.statusCode == 200){
-      return true; 
-    }
-    else{
-      return false;
-    }
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
   }
   
-  static Future<bool> addPatient(Patient patient, String token) async {
+  static Future<CustomHttpResponse> addPatient(Patient patient, String token) async {
     var body = {};
     if(patient.preferredCommunication == 'email'){
       body = {
@@ -85,6 +91,7 @@ class Api{
         "weight" : patient.height,
       };
     }
+    CustomHttpResponse customResponse;
     var response = await post(
       Uri.parse(baseUrl + "patient"), headers : {
         "Accept": "application/json",
@@ -93,64 +100,85 @@ class Api{
       },
       body: json.encode(body),
     );
-    if(response.statusCode == 200){
-      return true; 
-    }
-    else{
-      return false;
-    }
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
   }
   
-  static Future<List<Patient>> fetchPatients(String token) async {
+  static Future<CustomHttpResponse> fetchPatients(String token) async {
     List<Patient> patients = [];
+    CustomHttpResponse customResponse;
     var url = baseUrl + "patient";
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
-    if (response.statusCode == 200){
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    if(response.statusCode == 200){
       patients = (json.decode(response.body)['patients'] as List).map((patient) => Patient(patient['id'], patient['name'], patient['dob'], patient['bloodGroup'], patient['gender'], patient['phone'], patient['email'], patient['allergies'], patient['notes'], patient['preferredCommunication'], patient['height'], patient['weight'])).toList();
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,patients);
     }
-    return patients;
+    else{
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    }
+    return customResponse;
   }
   
-  static Future<List<Drug>> fetchDrugs(String token) async {
+  static Future<CustomHttpResponse> fetchDrugs(String token) async {
     List<Drug> drugs = [];
+    CustomHttpResponse customResponse;
     var url = baseUrl + "drug";
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if (response.statusCode == 200){
       drugs = (json.decode(response.body)['drugs'] as List).map((drug) => Drug(drug['id'],drug['name'],drug['cost'],drug['unit'])).toList();
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,drugs);
     }
-    return drugs;
+    else{
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    }
+    return customResponse;
   }
   
-  static Future<List<Appointment>> fetchAppointments(String token, DateTime start, DateTime end) async {
+  static Future<CustomHttpResponse> fetchAppointments(String token, DateTime start, DateTime end) async {
     List<Appointment> appointments = [];
+    CustomHttpResponse customResponse;
     var url = baseUrl + "appointment?" + "start=" + DateFormat('yyyy-MM-dd').format(start) + " 00:00:00&end=" + DateFormat('yyyy-MM-dd').format(end)+ " 00:00:00";
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if (response.statusCode == 200){
       appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], start)).toList();
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,appointments);
     }
-    return appointments;
+    else{
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    }
+    return customResponse;
   }
   
-  static Future<List<Appointment>> fetchAllAppointments(String token) async {
+  static Future<CustomHttpResponse> fetchAllAppointments(String token) async {
     List<Appointment> appointments = [];
+    CustomHttpResponse customResponse;
     var url = baseUrl + "appointment";
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if (response.statusCode == 200){
       appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(appointment['datetime']))).toList();
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,appointments);
     }
-    
-    return appointments;
+    else{
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    }
+    return customResponse;
   }
   
-  static Future<bool> addAppointment(Appointment appointment, String token) async {
+  static Future<CustomHttpResponse> addAppointment(Appointment appointment, String token) async {
+    CustomHttpResponse customResponse;
     var body = {
       "patientId" : appointment.patientId,
       "date" : {
@@ -167,53 +195,53 @@ class Api{
       },
       body: json.encode(body),
     );
-    if(response.statusCode == 200){
-      return true; 
-    }
-    else{
-      return false;
-    }
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
   }
   
-  static Future<bool> cancelAppointment(String token, int id) async {
+  static Future<CustomHttpResponse> cancelAppointment(String token, int id) async {
+    CustomHttpResponse customResponse;
     var url = baseUrl + "appointment/cancel/"+id.toString();
     var response = await http.post(Uri.parse(url), headers : {
       "Authorization" : token
     });
-    if (response.statusCode == 200){
-      return true;
-    }
-    else{
-      return false;
-    }
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
   }
   
-  static Future<bool> completeAppointment(String token, int id) async {
+  static Future<CustomHttpResponse> completeAppointment(String token, int id) async {
+    CustomHttpResponse customResponse;
     var url = baseUrl + "appointment/complete/"+id.toString();
     var response = await http.post(Uri.parse(url), headers : {
       "Authorization" : token
     });
-    if (response.statusCode == 200){
-      return true;
-    }
-    else{
-      return false;
-    }
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
   }
   
-  static Future<List<Bill>> fetchBills(String token) async {
+  static Future<CustomHttpResponse> fetchBills(String token) async {
     List<Bill> bills = [];
+    CustomHttpResponse customResponse;
     var url = baseUrl + "bill";
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if (response.statusCode == 200){
       bills = (json.decode(response.body)['bills'] as List).map((bill) => Bill(bill['Patient']['name'],bill['Patient']['id'],bill['total'],bill['paymentMethod'],bill['fileLink'])).toList();
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,bills);
     }
-    return bills;
+    else{
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    }
+    return customResponse;
   }
   
-  static Future<bool> addBill(Bill bill, List entries, String token) async{
+  static Future<CustomHttpResponse> addBill(Bill bill, List entries, String token) async{
+    CustomHttpResponse customResponse;
     var body = {
       "patientId" : bill.patientId,
       "total" : bill.total,
@@ -237,11 +265,8 @@ class Api{
       },
       body: json.encode(body),
     );
-    if(response.statusCode == 200){
-      return true; 
-    }
-    else{
-      return false;
-    }
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
   }
 }

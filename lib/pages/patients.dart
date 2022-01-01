@@ -1,5 +1,6 @@
 // ignore_for_file: unnecessary_null_comparison
 
+import 'package:android/models/custom_http_response.dart';
 import 'package:android/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
@@ -15,6 +16,7 @@ class PatientPage extends StatefulWidget {
 
 class PatientPageState extends State<PatientPage> {
   List<Patient> patients = [];
+  String token = '';
   bool isLoading = false;
   final nameController = TextEditingController();
   final dobController = TextEditingController();
@@ -35,15 +37,37 @@ class PatientPageState extends State<PatientPage> {
   }
   
   fetchPatients() async {
+    CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
-      final token = await SharePreferenceHelper.getUserToken();
+      var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        patients = await Api.fetchPatients(token);
+        customHttpResponse = await Api.fetchPatients(token);
+        token = token;
+        if(customHttpResponse.status){
+          patients = customHttpResponse.items.cast();
+        }
+        else{
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(customHttpResponse.message),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }, 
+                    child: const Text('OK')
+                  )
+                ],
+              );
+            }
+          );
+        }
         setState(() {
-          patients = patients;
           isLoading = false;
         });
       }
@@ -51,17 +75,36 @@ class PatientPageState extends State<PatientPage> {
   }
   
   addPatient(Patient patient){
+    CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        var result = await Api.addPatient(patient, token);
+        var customHttpResponse = await Api.addPatient(patient, token);
         setState(() {
           isLoading = false;
         });
-        fetchPatients();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){
+          fetchPatients();
+        }
       }
     });
   }

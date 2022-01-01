@@ -1,4 +1,5 @@
 // ignore_for_file: prefer_const_constructors
+import 'package:android/models/custom_http_response.dart';
 import 'package:android/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -52,15 +53,47 @@ class AppointmentPageState extends State<AppointmentPage> {
   }
   
   fetchAllAppointments() async {
+    CustomHttpResponse customAppointmentsHttpResponse;
+    CustomHttpResponse customPatientsHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        allAppointments = await Api.fetchAllAppointments(token);  
-        patients = await Api.fetchPatients(token);      
         token = token;
+        customAppointmentsHttpResponse = await Api.fetchAllAppointments(token);  
+        customPatientsHttpResponse = await Api.fetchPatients(token);      
+        token = token;
+        if(customPatientsHttpResponse.status && customAppointmentsHttpResponse.status){
+          allAppointments = customAppointmentsHttpResponse.items.cast();
+          patients = customPatientsHttpResponse.items.cast();
+        }
+        else{
+          String message = '';
+          if(customPatientsHttpResponse.status){
+            message = customPatientsHttpResponse.message;
+          }
+          else{
+            message = customAppointmentsHttpResponse.message;
+          }
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(message),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }, 
+                    child: const Text('OK')
+                  )
+                ],
+              );
+            }
+          );
+        }
         setState(() {
           isLoading = false;
         });
@@ -69,49 +102,109 @@ class AppointmentPageState extends State<AppointmentPage> {
   }
   
   addAppointment(Appointment appointment) async {
+    CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        var result = await Api.addAppointment(appointment, token);
+        customHttpResponse = await Api.addAppointment(appointment, token);
+        token = token;
         setState(() {
           isLoading = false;
         });
-        fetchAllAppointments();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){
+          fetchAllAppointments(); 
+        }
       }
     });
   }
   
   cancelAppointment(int id) async {
+    CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        var result = await Api.cancelAppointment(token, id);
+        customHttpResponse = await Api.cancelAppointment(token, id);
+        token = token;
         setState(() {
           isLoading = false;
         });
-        fetchAllAppointments();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){
+          fetchAllAppointments(); 
+        }
       }
     });
   }
   
   completeAppointment(int id) async {
+    CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
     });
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        var result = await Api.completeAppointment(token, id);
+        customHttpResponse = await Api.completeAppointment(token, id);
+        token = token;
         setState(() {
           isLoading = false;
         });
-        fetchAllAppointments();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){
+          fetchAllAppointments(); 
+        }
       }
     });
   }
