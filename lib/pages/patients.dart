@@ -1,10 +1,11 @@
-// ignore_for_file: unnecessary_null_comparison
+// ignore_for_file: unnecessary_null_comparison, prefer_const_constructors
 
 import 'package:android/models/custom_http_response.dart';
 import 'package:android/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/providers/api.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import '../navbar.dart';
 
 class PatientPage extends StatefulWidget {
@@ -264,24 +265,128 @@ class PatientPageState extends State<PatientPage> {
   Widget getCard(Patient patient){
     var fullName = patient.name;
     var contact = (patient.email == null) ? patient.phone : patient.email;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: ListTile(
-          title: Row(
+    return InkWell(
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: ListTile(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(patient.name, style: const TextStyle(fontSize: 17)),
+                    const SizedBox(height: 10,),
+                    Text(patient.id, style: const TextStyle(color: Colors.grey)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: () {
+                        
+                      },
+                      child: patient.email == null ? Icon(Icons.phone, color: Colors.white) : Icon(Icons.mail, color: Colors.white),
+                      style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(10),
+                        primary: Colors.blue, // <-- Button color
+                        onPrimary: Colors.red, // <-- Splash color
+                      ),
+                    )
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+      onTap: () async  {
+        Alert(
+          context: context,
+          style: alertStyle,
+          title: fullName,
+          buttons: [
+            DialogButton(
+              child: Text(
+                "Close",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+              onPressed: () => Navigator.pop(context),
+              color: Color.fromRGBO(0, 179, 134, 1.0),
+            ),
+          ],
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 10,),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  Text(fullName.toString(), style: const TextStyle(fontSize: 17)),
-                  const SizedBox(height: 10,),
-                  Text(contact.toString(), style: const TextStyle(color: Colors.grey)),
+                  Text("Id: ", style: TextStyle(color: Colors.grey, fontSize: 17)),
+                  Text(patient.id, style: TextStyle(fontSize: 17)),    
                 ],
               ),
+              const SizedBox(height: 10,),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text("Contact: ", style: TextStyle(color: Colors.grey, fontSize: 17)),
+                  Text(contact.toString(), style: TextStyle(fontSize: 17)),    
+                ],
+              ),
+              const SizedBox(height: 10,),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text("Date of Birth: ", style: TextStyle(color: Colors.grey, fontSize: 17)),
+                  Text(patient.dob, style: TextStyle(fontSize: 17)),    
+                ],
+              ),
+              const SizedBox(height: 10,),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text("Blood Group: ", style: TextStyle(color: Colors.grey, fontSize: 17)),
+                  Text(patient.bloodGroup, style: TextStyle(fontSize: 17)),    
+                ],
+              ),
+              const SizedBox(height: 10,),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text("Gender: ", style: TextStyle(color: Colors.grey, fontSize: 17)),
+                  Text(patient.gender, style: TextStyle(fontSize: 17)),    
+                ],
+              ),
+              const SizedBox(height: 10,),
+              Text("Allergies: ", style: TextStyle(color: Colors.grey, fontSize: 17)),
+              Text(patient.allergies, style: TextStyle(fontSize: 17)),
+              const SizedBox(height: 10,),
+              Text("Notes: ", style: TextStyle(color: Colors.grey, fontSize: 17)),
+              Text(patient.notes, style: TextStyle(fontSize: 17)),
             ],
-          )
-        ),
-      )
+          ),
+        ).show();
+      }, 
     );
   }
+  var alertStyle = AlertStyle(
+    animationType: AnimationType.fromTop,
+    isCloseButton: false,
+    isOverlayTapDismiss: true,
+    descStyle: const TextStyle(fontWeight: FontWeight.bold),
+    animationDuration: Duration(milliseconds: 400),
+    alertBorder: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20.0),
+      side: BorderSide(
+        color: Colors.grey,
+      ),
+    ),
+    titleStyle: const TextStyle(
+      color: Color.fromRGBO(91, 55, 185, 1.0),
+    ),
+  );
 }

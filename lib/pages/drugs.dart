@@ -196,6 +196,7 @@ class DrugPageState extends State<DrugPage> {
         padding: const EdgeInsets.all(10.0),
         child: ListTile(
           title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,6 +206,23 @@ class DrugPageState extends State<DrugPage> {
                   Text(email.toString(), style: const TextStyle(color: Colors.grey)),
                 ],
               ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  ElevatedButton(
+                    onPressed: () {
+                      
+                    },
+                    child: const Icon(Icons.edit, color: Colors.white),
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(10),
+                      primary: Colors.blue, // <-- Button color
+                      onPrimary: Colors.red, // <-- Splash color
+                    ),
+                  )
+                ],
+              )
             ],
           )
         ),
