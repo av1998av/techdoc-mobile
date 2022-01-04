@@ -5,6 +5,7 @@ import 'package:android/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/providers/api.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import '../navbar.dart';
 
@@ -37,7 +38,7 @@ class PatientPageState extends State<PatientPage> {
     fetchPatients();
   }
   
-  fetchPatients() async {
+  Future<void> fetchPatients() async {
     CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
@@ -256,11 +257,15 @@ class PatientPageState extends State<PatientPage> {
         child: CircularProgressIndicator(),
       );
     }
-    return ListView.builder(
-      itemCount: patients.length,
-      itemBuilder: (context,index){
-      return getCard(patients[index]);
-    });
+    return RefreshIndicator(
+      child: ListView.builder(
+        itemCount: patients.length,
+        itemBuilder: (context,index){
+          return getCard(patients[index]);
+        }
+      ), 
+      onRefresh: fetchPatients
+    );
   }
   Widget getCard(Patient patient){
     var fullName = patient.name;
@@ -285,8 +290,25 @@ class PatientPageState extends State<PatientPage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     ElevatedButton(
-                      onPressed: () {
-                        
+                      onPressed: () async {
+                        if(patient.email == null){
+                          var url = 'tel:+91'+patient.phone.toString();
+                          if (await canLaunch(url)) {
+                            await launch(url);
+                          } 
+                          else {
+                            throw 'Could not launch $url';
+                          } 
+                        }
+                        else if(patient.phone == null){
+                          var url = 'mailto:'+patient.email.toString();
+                          if (await canLaunch(url)) {
+                            await launch(url);
+                          } 
+                          else {
+                            throw 'Could not launch $url';
+                          } 
+                        }
                       },
                       child: patient.email == null ? Icon(Icons.phone, color: Colors.white) : Icon(Icons.mail, color: Colors.white),
                       style: ElevatedButton.styleFrom(

@@ -9,7 +9,6 @@ import 'package:android/models/drug.dart';
 import 'package:android/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
-import 'package:url_launcher/link.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:android/providers/api.dart';
