@@ -49,7 +49,7 @@ class BillPageState extends State<BillPage> {
     fetchBills();
   }
   
-  fetchBills() async {
+  Future<void> fetchBills() async {
     CustomHttpResponse customBillsHttpResponse;
     CustomHttpResponse customPatientsHttpResponse;
     CustomHttpResponse customDrugsHttpResponse;
@@ -317,11 +317,15 @@ class BillPageState extends State<BillPage> {
         child: CircularProgressIndicator(),
       );
     }
-    return ListView.builder(
-      itemCount: bills.length,
-      itemBuilder: (context,index){
-      return getCard(bills[index]);
-    });
+    return RefreshIndicator(
+      child: ListView.builder(
+        itemCount: bills.length,
+        itemBuilder: (context,index){
+          return getCard(bills[index]);
+        }
+      ),
+      onRefresh: fetchBills
+    );
   }
   Widget getCard(Bill bill){
     var fullName = bill.name;

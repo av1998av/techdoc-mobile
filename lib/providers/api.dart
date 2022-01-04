@@ -61,6 +61,26 @@ class Api{
     return customResponse;
   }
   
+  static Future<CustomHttpResponse> updateDrug(String id, String name, String unit, int cost, String token) async {
+    var body = {
+      "name" : name,
+      "cost" : cost,
+      "unit" : unit
+    };
+    CustomHttpResponse customResponse;
+    var response = await put(
+      Uri.parse(baseUrl + "drug/" + id), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization" : token
+      },
+      body: json.encode(body),
+    );
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
+  }
+  
   static Future<CustomHttpResponse> addPatient(Patient patient, String token) async {
     var body = {};
     if(patient.preferredCommunication == 'email'){

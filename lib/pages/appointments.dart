@@ -52,7 +52,7 @@ class AppointmentPageState extends State<AppointmentPage> {
     return allAppointments.where((appointment) => DateFormat('yyy-MM-dd').format(appointment.date) == DateFormat('yyy-MM-dd').format(day)).toList();
   }
   
-  fetchAllAppointments() async {
+  Future<void> fetchAllAppointments() async {
     CustomHttpResponse customAppointmentsHttpResponse;
     CustomHttpResponse customPatientsHttpResponse;
     setState(() {
@@ -295,88 +295,91 @@ class AppointmentPageState extends State<AppointmentPage> {
         child: CircularProgressIndicator(),
       );
     }
-    return Column(
-      children: [
-        TableCalendar<Appointment>(
-          firstDay: kFirstDay,
-          lastDay: kLastDay,
-          focusedDay: focusedDay,
-          selectedDayPredicate: (day) => isSameDay(selectedDay, day),
-          rangeStartDay: rangeStart,
-          rangeEndDay: rangeEnd,
-          calendarFormat: calendarFormat,
-          rangeSelectionMode: rangeSelectionMode,
-          eventLoader: getAppointmentsForDay,
-          startingDayOfWeek: StartingDayOfWeek.monday,
-          calendarStyle: CalendarStyle(
-            outsideDaysVisible: false,
-          ),
-          onDaySelected: onDaySelected,
-          onFormatChanged: (format) {
-            if (calendarFormat != format) {
-              setState(() {
-                calendarFormat = format;
-              });
-            }
-          },
-          onPageChanged: (focusedDay) {
-            focusedDay = focusedDay;
-          },
-        ),
-        const SizedBox(height: 8.0),
-        Expanded(
-          child: ValueListenableBuilder<List<Appointment>>(
-            valueListenable: selectedAppointments,
-            builder: (context, value, _) {
-              return ListView.builder(
-                itemCount: value.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 12.0,
-                      vertical: 4.0,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(),
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: ListTile(
-                      title: Text(value[index].patientName),
-                      subtitle: Text(value[index].status),
-                      onLongPress: () =>{
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Cancel/Complete Appointment'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () { 
-                                    Navigator.pop(context);
-                                    completeAppointment(value[index].id);
-                                  },
-                                  child: const Text('Complete'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    cancelAppointment(value[index].id);
-                                  }, 
-                                  child: const Text('Cancel')
-                                )
-                              ],
-                            );
-                          }
-                        )
-                      },
-                    ),
-                  );
-                },
-              );
+    return RefreshIndicator(
+      child: Column(
+        children: [
+          TableCalendar<Appointment>(
+            firstDay: kFirstDay,
+            lastDay: kLastDay,
+            focusedDay: focusedDay,
+            selectedDayPredicate: (day) => isSameDay(selectedDay, day),
+            rangeStartDay: rangeStart,
+            rangeEndDay: rangeEnd,
+            calendarFormat: calendarFormat,
+            rangeSelectionMode: rangeSelectionMode,
+            eventLoader: getAppointmentsForDay,
+            startingDayOfWeek: StartingDayOfWeek.monday,
+            calendarStyle: CalendarStyle(
+              outsideDaysVisible: false,
+            ),
+            onDaySelected: onDaySelected,
+            onFormatChanged: (format) {
+              if (calendarFormat != format) {
+                setState(() {
+                  calendarFormat = format;
+                });
+              }
+            },
+            onPageChanged: (focusedDay) {
+              focusedDay = focusedDay;
             },
           ),
-        ),        
-      ],
+          const SizedBox(height: 8.0),
+          Expanded(
+            child: ValueListenableBuilder<List<Appointment>>(
+              valueListenable: selectedAppointments,
+              builder: (context, value, _) {
+                return ListView.builder(
+                  itemCount: value.length,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12.0,
+                        vertical: 4.0,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: ListTile(
+                        title: Text(value[index].patientName),
+                        subtitle: Text(value[index].status),
+                        onLongPress: () =>{
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Cancel/Complete Appointment'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () { 
+                                      Navigator.pop(context);
+                                      completeAppointment(value[index].id);
+                                    },
+                                    child: const Text('Complete'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      cancelAppointment(value[index].id);
+                                    }, 
+                                    child: const Text('Cancel')
+                                  )
+                                ],
+                              );
+                            }
+                          )
+                        },
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),        
+        ],
+      ),
+      onRefresh: fetchAllAppointments,
     );
   }
 }

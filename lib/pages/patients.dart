@@ -297,7 +297,21 @@ class PatientPageState extends State<PatientPage> {
                             await launch(url);
                           } 
                           else {
-                            throw 'Could not launch $url';
+                            Alert(
+                              context: context,
+                              style: alertStyle,
+                              title: "Could not open mobile",
+                              buttons: [
+                                DialogButton(
+                                  child: Text(
+                                    "Close",
+                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                  ),
+                                  onPressed: () => Navigator.pop(context),
+                                  color: Color.fromRGBO(0, 179, 134, 1.0),
+                                ),
+                              ]
+                            ).show();
                           } 
                         }
                         else if(patient.phone == null){
@@ -306,7 +320,21 @@ class PatientPageState extends State<PatientPage> {
                             await launch(url);
                           } 
                           else {
-                            throw 'Could not launch $url';
+                            Alert(
+                              context: context,
+                              style: alertStyle,
+                              title: "Could not open mail",
+                              buttons: [
+                                DialogButton(
+                                  child: Text(
+                                    "Close",
+                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                  ),
+                                  onPressed: () => Navigator.pop(context),
+                                  color: Color.fromRGBO(0, 179, 134, 1.0),
+                                ),
+                              ]
+                            ).show();
                           } 
                         }
                       },

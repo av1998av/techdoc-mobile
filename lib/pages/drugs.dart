@@ -19,6 +19,9 @@ class DrugPageState extends State<DrugPage> {
   final nameController = TextEditingController();
   final costController = TextEditingController();
   final unitController = TextEditingController();
+  final nameEditController = TextEditingController();
+  final costEditController = TextEditingController();
+  final unitEditController = TextEditingController();
   
   @override
   void initState(){
@@ -26,7 +29,7 @@ class DrugPageState extends State<DrugPage> {
     fetchDrugs();
   }
   
-  fetchDrugs() async {
+  Future<void> fetchDrugs() async {
     CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
@@ -73,6 +76,41 @@ class DrugPageState extends State<DrugPage> {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
         customHttpResponse = await Api.addDrug(name, unit, cost, token);
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){          
+          fetchDrugs();
+        }
+      }
+    });
+  }
+  
+  updateDrug(String id, String name, int cost, String unit) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.updateDrug(id, name, unit, cost, token);
         setState(() {
           isLoading = false;
         });
@@ -181,11 +219,15 @@ class DrugPageState extends State<DrugPage> {
         child: CircularProgressIndicator(),
       );
     }
-    return ListView.builder(
-      itemCount: drugs.length,
-      itemBuilder: (context,index){
-      return getCard(drugs[index]);
-    });
+    return RefreshIndicator(
+      child: ListView.builder(
+        itemCount: drugs.length,
+        itemBuilder: (context,index){
+          return getCard(drugs[index]); 
+        }
+      ),
+      onRefresh: fetchDrugs
+    );
   }
   
   Widget getCard(Drug drug){
@@ -211,7 +253,68 @@ class DrugPageState extends State<DrugPage> {
                 children: <Widget>[
                   ElevatedButton(
                     onPressed: () {
-                      
+                      nameEditController.text = drug.name;
+                      costEditController.text = drug.cost.toString();
+                      unitEditController.text = drug.unit;
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            scrollable: true,
+                            title: const Text('Update Drug/Process'),
+                            content: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Form(
+                              child: Column(
+                                children: <Widget>[
+                                  TextFormField(
+                                    controller: nameEditController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Name',                
+                                    ),
+                                  ),
+                                  TextFormField(
+                                    controller: unitEditController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Unit'
+                                    ),
+                                  ),
+                                  TextFormField(
+                                    controller: costEditController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Price',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              style: ButtonStyle(
+                                foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                              ),
+                              onPressed: () async { 
+                                String name = nameEditController.text;
+                                String unit = unitEditController.text;
+                                int cost = int.parse(costEditController.text);
+                                if (name != ''){
+                                  Navigator.pop(context);
+                                  await updateDrug(drug.id.toString(), name, cost, unit);
+                                }
+                              },
+                              child: const Text('Submit'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }, 
+                              child: const Text('Cancel')
+                            )
+                          ],
+                        );
+                      });
                     },
                     child: const Icon(Icons.edit, color: Colors.white),
                     style: ElevatedButton.styleFrom(
