@@ -1,18 +1,18 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'package:android/components/patient_view.dart';
+import 'package:android/components/drug_view.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 
-class Test3 extends StatefulWidget {
-  const Test3({Key? key, this.animationController}) : super(key: key);
+class DrugsTab extends StatefulWidget {
+  const DrugsTab({Key? key, this.animationController}) : super(key: key);
 
   final AnimationController? animationController;
   @override
-  TestState createState() => TestState();
+  DrugsTabState createState() => DrugsTabState();
 }
 
-class TestState extends State<Test3>
+class DrugsTabState extends State<DrugsTab>
     with TickerProviderStateMixin {
   Animation<double>? topBarAnimation;
 
@@ -142,7 +142,7 @@ class TestState extends State<Test3>
                               child: Padding(
                                 padding: const EdgeInsets.all(3.0),
                                 child: Text(
-                                  'Patients',
+                                  'Drugs/Processes',
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                     fontFamily: FitnessAppTheme.fontName,
@@ -150,6 +150,32 @@ class TestState extends State<Test3>
                                     fontSize: 17 + 6 - 6 * topBarOpacity,
                                     letterSpacing: 1,
                                     color: FitnessAppTheme.darkerText,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 38,
+                              width: 38,
+                              child: InkWell(
+                                highlightColor: Colors.transparent,
+                                borderRadius: const BorderRadius.all(Radius.circular(32.0)),
+                                onTap: () {
+                                  showMenu<String>(
+                                    context: context,
+                                    position: RelativeRect.fromLTRB(25.0, 25.0, 0.0, 0.0),      //position where you want to show the menu on screen
+                                    items: [                                      
+                                      PopupMenuItem<String>(child: const Text('Settings')),
+                                      PopupMenuItem<String>(child: const Text('Logout'), onTap: () async {
+                                        
+                                      })
+                                    ],
+                                    elevation: 8.0,
+                                  );
+                                },
+                                child: Center(
+                                  child: Icon(
+                                    Icons.more_vert_outlined                                    
                                   ),
                                 ),
                               ),
@@ -177,7 +203,7 @@ class TestState extends State<Test3>
     const int count = 9;
 
     listViews.add(
-      PatientView(
+      DrugView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -187,7 +213,7 @@ class TestState extends State<Test3>
     );
     
     listViews.add(
-      PatientView(
+      DrugView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -197,7 +223,7 @@ class TestState extends State<Test3>
     );
     
     listViews.add(
-      PatientView(
+      DrugView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -207,7 +233,7 @@ class TestState extends State<Test3>
     );
     
     listViews.add(
-      PatientView(
+      DrugView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -217,7 +243,7 @@ class TestState extends State<Test3>
     );
     
     listViews.add(
-      PatientView(
+      DrugView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -227,7 +253,7 @@ class TestState extends State<Test3>
     );
     
     listViews.add(
-      PatientView(
+      DrugView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:

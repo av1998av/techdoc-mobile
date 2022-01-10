@@ -1,19 +1,18 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'package:android/components/appointment_view.dart';
-import 'package:android/components/appointments_summary.dart';
+import 'package:android/components/patient_view.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 
-class Test extends StatefulWidget {
-  const Test({Key? key, this.animationController}) : super(key: key);
+class PatientsTab extends StatefulWidget {
+  const PatientsTab({Key? key, this.animationController}) : super(key: key);
 
   final AnimationController? animationController;
   @override
-  TestState createState() => TestState();
+  PatientsTabState createState() => PatientsTabState();
 }
 
-class TestState extends State<Test>
+class PatientsTabState extends State<PatientsTab>
     with TickerProviderStateMixin {
   Animation<double>? topBarAnimation;
 
@@ -143,7 +142,7 @@ class TestState extends State<Test>
                               child: Padding(
                                 padding: const EdgeInsets.all(3.0),
                                 child: Text(
-                                  'Appointments',
+                                  'Patients',
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                     fontFamily: FitnessAppTheme.fontName,
@@ -160,76 +159,30 @@ class TestState extends State<Test>
                               width: 38,
                               child: InkWell(
                                 highlightColor: Colors.transparent,
-                                borderRadius: const BorderRadius.all(
-                                    Radius.circular(32.0)),
-                                onTap: () {},
+                                borderRadius: const BorderRadius.all(Radius.circular(32.0)),
+                                onTap: () {
+                                  showMenu<String>(
+                                    context: context,
+                                    position: RelativeRect.fromLTRB(25.0, 25.0, 0.0, 0.0),      //position where you want to show the menu on screen
+                                    items: [                                      
+                                      PopupMenuItem<String>(child: const Text('Settings')),
+                                      PopupMenuItem<String>(child: const Text('Logout'), onTap: () async {
+                                        
+                                      })
+                                    ],
+                                    elevation: 8.0,
+                                  );
+                                },
                                 child: Center(
                                   child: Icon(
-                                    Icons.keyboard_arrow_left,
-                                    color: FitnessAppTheme.grey,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: 8,
-                                right: 8,
-                              ),
-                              child: Row(
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: Icon(
-                                      Icons.calendar_today,
-                                      color: FitnessAppTheme.grey,
-                                      size: 18,
-                                    ),
-                                  ),
-                                  InkWell(
-                                    child: Text(
-                                      '15 May',
-                                      textAlign: TextAlign.left,
-                                      style: TextStyle(
-                                        fontFamily: FitnessAppTheme.fontName,
-                                        fontWeight: FontWeight.normal,
-                                        fontSize: 18,
-                                        letterSpacing: -0.2,
-                                        color: FitnessAppTheme.darkerText,
-                                      ),                                      
-                                    ),
-                                    onTap: (){
-                                      showDatePicker(
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime(2000),
-                                        lastDate: DateTime(2025),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 38,
-                              width: 38,
-                              child: InkWell(
-                                highlightColor: Colors.transparent,
-                                borderRadius: const BorderRadius.all(
-                                    Radius.circular(32.0)),
-                                onTap: () {},
-                                child: Center(
-                                  child: Icon(
-                                    Icons.keyboard_arrow_right,
-                                    color: FitnessAppTheme.grey,
+                                    Icons.more_vert_outlined                                    
                                   ),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      
+                      )
                     ],
                   ),
                 ),
@@ -248,19 +201,9 @@ class TestState extends State<Test>
   
   void addAllListData() {
     const int count = 9;
-    
+
     listViews.add(
-      AppointmentsSummaryView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 1, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      AppointmentView(
+      PatientView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -270,7 +213,7 @@ class TestState extends State<Test>
     );
     
     listViews.add(
-      AppointmentView(
+      PatientView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -280,7 +223,7 @@ class TestState extends State<Test>
     );
     
     listViews.add(
-      AppointmentView(
+      PatientView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -290,7 +233,27 @@ class TestState extends State<Test>
     );
     
     listViews.add(
-      AppointmentView(
+      PatientView(
+        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+            parent: widget.animationController!,
+            curve:
+                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
+        animationController: widget.animationController!,
+      ),
+    );
+    
+    listViews.add(
+      PatientView(
+        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+            parent: widget.animationController!,
+            curve:
+                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
+        animationController: widget.animationController!,
+      ),
+    );
+    
+    listViews.add(
+      PatientView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:

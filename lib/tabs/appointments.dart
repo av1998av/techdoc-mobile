@@ -1,18 +1,19 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'package:android/components/drug_view.dart';
+import 'package:android/components/appointment_view.dart';
+import 'package:android/components/appointments_summary.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 
-class Test2 extends StatefulWidget {
-  const Test2({Key? key, this.animationController}) : super(key: key);
+class AppointmentsTab extends StatefulWidget {
+  const AppointmentsTab({Key? key, this.animationController}) : super(key: key);
 
   final AnimationController? animationController;
   @override
-  TestState createState() => TestState();
+  AppointmentsTabState createState() => AppointmentsTabState();
 }
 
-class TestState extends State<Test2>
+class AppointmentsTabState extends State<AppointmentsTab>
     with TickerProviderStateMixin {
   Animation<double>? topBarAnimation;
 
@@ -98,6 +99,19 @@ class TestState extends State<Test2>
       },
     );
   }
+  
+  void handleClick(String value) {
+    switch (value) {
+      case 'Logout':
+        break;
+      case 'Settings':
+        break;
+    }
+  }
+  
+  var snackBar = SnackBar(
+    content: Text('Yay! A SnackBar!'),
+  );
 
   Widget getAppBarUI() {
     return Column(
@@ -142,7 +156,7 @@ class TestState extends State<Test2>
                               child: Padding(
                                 padding: const EdgeInsets.all(3.0),
                                 child: Text(
-                                  'Drugs/Processes',
+                                  'Appointments',
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                     fontFamily: FitnessAppTheme.fontName,
@@ -154,9 +168,75 @@ class TestState extends State<Test2>
                                 ),
                               ),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 8,
+                                right: 8,
+                              ),
+                              child: Row(
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: Icon(
+                                      Icons.calendar_today,
+                                      color: FitnessAppTheme.grey,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  InkWell(
+                                    child: Text(
+                                      '15 May',
+                                      textAlign: TextAlign.left,
+                                      style: TextStyle(
+                                        fontFamily: FitnessAppTheme.fontName,
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: 18,
+                                        letterSpacing: -0.2,
+                                        color: FitnessAppTheme.darkerText,
+                                      ),                                      
+                                    ),
+                                    onTap: (){
+                                      showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2025),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 38,
+                              width: 38,
+                              child: InkWell(
+                                highlightColor: Colors.transparent,
+                                borderRadius: const BorderRadius.all(Radius.circular(32.0)),
+                                onTap: () {
+                                  showMenu<String>(
+                                    context: context,
+                                    position: RelativeRect.fromLTRB(25.0, 25.0, 0.0, 0.0),      //position where you want to show the menu on screen
+                                    items: [                                      
+                                      PopupMenuItem<String>(child: const Text('Settings')),
+                                      PopupMenuItem<String>(child: const Text('Logout'), onTap: () async {
+                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                      })
+                                    ],
+                                    elevation: 8.0,
+                                  );
+                                },
+                                child: Center(
+                                  child: Icon(
+                                    Icons.more_vert_outlined                                    
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                      )
+                      ),
+                      
                     ],
                   ),
                 ),
@@ -175,9 +255,19 @@ class TestState extends State<Test2>
   
   void addAllListData() {
     const int count = 9;
-
+    
     listViews.add(
-      DrugView(
+      AppointmentsSummaryView(
+        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+            parent: widget.animationController!,
+            curve:
+                Interval((1 / count) * 1, 1.0, curve: Curves.fastOutSlowIn))),
+        animationController: widget.animationController!,
+      ),
+    );
+    
+    listViews.add(
+      AppointmentView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -187,7 +277,7 @@ class TestState extends State<Test2>
     );
     
     listViews.add(
-      DrugView(
+      AppointmentView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -197,7 +287,7 @@ class TestState extends State<Test2>
     );
     
     listViews.add(
-      DrugView(
+      AppointmentView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:
@@ -207,27 +297,7 @@ class TestState extends State<Test2>
     );
     
     listViews.add(
-      DrugView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      DrugView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      DrugView(
+      AppointmentView(
         animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: widget.animationController!,
             curve:

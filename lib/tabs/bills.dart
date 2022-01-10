@@ -4,15 +4,15 @@ import 'package:android/components/bill_view.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 
-class Test4 extends StatefulWidget {
-  const Test4({Key? key, this.animationController}) : super(key: key);
+class BillsTab extends StatefulWidget {
+  const BillsTab({Key? key, this.animationController}) : super(key: key);
 
   final AnimationController? animationController;
   @override
-  TestState createState() => TestState();
+  BillsTabState createState() => BillsTabState();
 }
 
-class TestState extends State<Test4>
+class BillsTabState extends State<BillsTab>
     with TickerProviderStateMixin {
   Animation<double>? topBarAnimation;
 
@@ -150,6 +150,32 @@ class TestState extends State<Test4>
                                     fontSize: 17 + 6 - 6 * topBarOpacity,
                                     letterSpacing: 1,
                                     color: FitnessAppTheme.darkerText,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 38,
+                              width: 38,
+                              child: InkWell(
+                                highlightColor: Colors.transparent,
+                                borderRadius: const BorderRadius.all(Radius.circular(32.0)),
+                                onTap: () {
+                                  showMenu<String>(
+                                    context: context,
+                                    position: RelativeRect.fromLTRB(25.0, 25.0, 0.0, 0.0),      //position where you want to show the menu on screen
+                                    items: [                                      
+                                      PopupMenuItem<String>(child: const Text('Settings')),
+                                      PopupMenuItem<String>(child: const Text('Logout'), onTap: () async {
+                                        
+                                      })
+                                    ],
+                                    elevation: 8.0,
+                                  );
+                                },
+                                child: Center(
+                                  child: Icon(
+                                    Icons.more_vert_outlined                                    
                                   ),
                                 ),
                               ),
