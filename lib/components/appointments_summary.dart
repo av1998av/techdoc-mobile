@@ -8,10 +8,11 @@ import 'dart:math' as math;
 class AppointmentsSummaryView extends StatelessWidget {
   final AnimationController? animationController;
   final Animation<double>? animation;
+  final int total;
+  final int completed;
+  final int cancelled;
 
-  const AppointmentsSummaryView(
-      {Key? key, this.animationController, this.animation})
-      : super(key: key);
+  const AppointmentsSummaryView({Key? key, this.animationController, this.animation, required this.total, required this.completed, required this.cancelled}): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +103,7 @@ class AppointmentsSummaryView extends StatelessWidget {
                                                       const EdgeInsets.only(
                                                           left: 4, bottom: 3),
                                                   child: Text(
-                                                    '${(1127 * animation!.value).toInt()}',
+                                                    '${(total * animation!.value).toInt()}',
                                                     textAlign: TextAlign.center,
                                                     style: TextStyle(
                                                       fontFamily:
@@ -174,7 +175,7 @@ class AppointmentsSummaryView extends StatelessWidget {
                                                       const EdgeInsets.only(
                                                           left: 4, bottom: 3),
                                                   child: Text(
-                                                    '${(102 * animation!.value).toInt()}',
+                                                    '${(completed * animation!.value).toInt()}',
                                                     textAlign: TextAlign.center,
                                                     style: TextStyle(
                                                       fontFamily:
@@ -228,7 +229,7 @@ class AppointmentsSummaryView extends StatelessWidget {
                                             CrossAxisAlignment.center,
                                         children: <Widget>[
                                           Text(
-                                            '${(1503 * animation!.value).toInt()}',
+                                            '${((total-(completed + cancelled)) * animation!.value).toInt()}',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               fontFamily:

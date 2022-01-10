@@ -1,13 +1,15 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, unnecessary_new
 
+import 'package:android/models/appointment.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 
 class AppointmentView extends StatelessWidget {
   final AnimationController? animationController;
   final Animation<double>? animation;
+  Appointment appointment;
 
-  const AppointmentView({Key? key, this.animationController, this.animation})
+  AppointmentView({Key? key, this.animationController, this.animation, required this.appointment})
       : super(key: key);
 
   @override
@@ -58,7 +60,7 @@ class AppointmentView extends StatelessWidget {
                                     padding: const EdgeInsets.only(
                                         left: 4, bottom: 3),
                                     child: Text(
-                                      'Venkatesh',
+                                      appointment.patientName,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontFamily: FitnessAppTheme.fontName,

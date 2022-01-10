@@ -2,8 +2,14 @@
 
 import 'package:android/components/appointment_view.dart';
 import 'package:android/components/appointments_summary.dart';
+import 'package:android/helpers/shared_pref_helper.dart';
+import 'package:android/models/appointment.dart';
+import 'package:android/models/custom_http_response.dart';
+import 'package:android/models/patient.dart';
+import 'package:android/providers/api.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AppointmentsTab extends StatefulWidget {
   const AppointmentsTab({Key? key, this.animationController}) : super(key: key);
@@ -13,8 +19,13 @@ class AppointmentsTab extends StatefulWidget {
   AppointmentsTabState createState() => AppointmentsTabState();
 }
 
-class AppointmentsTabState extends State<AppointmentsTab>
-    with TickerProviderStateMixin {
+class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderStateMixin {
+  List<Appointment> allAppointments = [];
+  List<Patient> patients = [];
+  bool isLoading = false;
+  String token = '';
+  DateTime today = DateTime.now();
+
   Animation<double>? topBarAnimation;
 
   List<Widget> listViews = <Widget>[];
@@ -28,7 +39,7 @@ class AppointmentsTabState extends State<AppointmentsTab>
             parent: widget.animationController!,
             curve: Interval(0, 0.5, curve: Curves.fastOutSlowIn)));
     
-    addAllListData();
+    fetchAllAppointments();    
     scrollController.addListener(() {
       if (scrollController.offset >= 24) {
         if (topBarOpacity != 1.0) {
@@ -53,6 +64,57 @@ class AppointmentsTabState extends State<AppointmentsTab>
     });
     super.initState();
   }
+  
+  Future<void> fetchAllAppointments() async {
+    CustomHttpResponse customAppointmentsHttpResponse;
+    CustomHttpResponse customPatientsHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        token = token;
+        customAppointmentsHttpResponse = await Api.fetchDateAppointments(token,today);  
+        customPatientsHttpResponse = await Api.fetchPatients(token);      
+        token = token;
+        if(customPatientsHttpResponse.status && customAppointmentsHttpResponse.status){
+          allAppointments = customAppointmentsHttpResponse.items.cast();
+          patients = customPatientsHttpResponse.items.cast();
+          addAllListData(allAppointments);
+        }
+        else{
+          String message = '';
+          if(customPatientsHttpResponse.status){
+            message = customPatientsHttpResponse.message;
+          }
+          else{
+            message = customAppointmentsHttpResponse.message;
+          }
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(message),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }, 
+                    child: const Text('OK')
+                  )
+                ],
+              );
+            }
+          );
+        }
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -60,17 +122,28 @@ class AppointmentsTabState extends State<AppointmentsTab>
       color: FitnessAppTheme.background,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Stack(
-          children: <Widget>[
-            getMainListViewUI(),
-            getAppBarUI(),
-            SizedBox(
-              height: MediaQuery.of(context).padding.bottom,
-            )
-          ],
-        ),
+        body: getBody()
       ),
     );
+  }
+  
+  Widget getBody(){
+    if(isLoading){
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    else{
+      return Stack(
+        children: <Widget>[
+          getMainListViewUI(),
+          getAppBarUI(),
+          SizedBox(
+            height: MediaQuery.of(context).padding.bottom,
+          )
+        ],
+      );
+    }
   }
   
   Widget getMainListViewUI() {
@@ -109,10 +182,6 @@ class AppointmentsTabState extends State<AppointmentsTab>
     }
   }
   
-  var snackBar = SnackBar(
-    content: Text('Yay! A SnackBar!'),
-  );
-
   Widget getAppBarUI() {
     return Column(
       children: <Widget>[
@@ -185,7 +254,7 @@ class AppointmentsTabState extends State<AppointmentsTab>
                                   ),
                                   InkWell(
                                     child: Text(
-                                      '15 May',
+                                      DateFormat('dd/MM/yyyy').format(today),
                                       textAlign: TextAlign.left,
                                       style: TextStyle(
                                         fontFamily: FitnessAppTheme.fontName,
@@ -195,13 +264,14 @@ class AppointmentsTabState extends State<AppointmentsTab>
                                         color: FitnessAppTheme.darkerText,
                                       ),                                      
                                     ),
-                                    onTap: (){
-                                      showDatePicker(
+                                    onTap: () async {
+                                      today = (await showDatePicker(
                                         context: context,
-                                        initialDate: DateTime.now(),
+                                        initialDate: today,
                                         firstDate: DateTime(2000),
-                                        lastDate: DateTime(2025),
-                                      );
+                                        lastDate: DateTime(2025),                                        
+                                      ))!;
+                                      fetchAllAppointments();
                                     },
                                   ),
                                 ],
@@ -220,7 +290,7 @@ class AppointmentsTabState extends State<AppointmentsTab>
                                     items: [                                      
                                       PopupMenuItem<String>(child: const Text('Settings')),
                                       PopupMenuItem<String>(child: const Text('Logout'), onTap: () async {
-                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        
                                       })
                                     ],
                                     elevation: 8.0,
@@ -253,58 +323,37 @@ class AppointmentsTabState extends State<AppointmentsTab>
     return true;
   }
   
-  void addAllListData() {
-    const int count = 9;
-    
+  void addAllListData(List<Appointment> appointments) {    
+    listViews.clear();
     listViews.add(
       AppointmentsSummaryView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+        animation: Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(
             parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 1, 1.0, curve: Curves.fastOutSlowIn))),
+            curve: Interval((1 / 9) * 1, 1.0, curve: Curves.fastOutSlowIn)
+          )
+        ),
         animationController: widget.animationController!,
+        total: appointments.length,
+        completed: appointments.where((i) => i.status == 'Completed').toList().length,
+        cancelled: appointments.where((i) => i.status == 'Cancelled').toList().length,
       ),
     );
     
-    listViews.add(
-      AppointmentView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      AppointmentView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      AppointmentView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      AppointmentView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
+    for(int i=0;i<appointments.length;i++){
+      listViews.add(
+        AppointmentView(
+          animation: Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(
+              parent: widget.animationController!,
+              curve: Interval((1 / 9) * 5, 1.0, curve: Curves.fastOutSlowIn)
+            )
+          ),
+          animationController: widget.animationController!,
+          appointment: appointments[i],
+        ),
+      );
+    }
     
   }
   

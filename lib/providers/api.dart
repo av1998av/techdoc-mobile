@@ -179,6 +179,24 @@ class Api{
     return customResponse;
   }
   
+  static Future<CustomHttpResponse> fetchDateAppointments(String token, DateTime date) async {
+    List<Appointment> appointments = [];
+    CustomHttpResponse customResponse;
+    var url = baseUrl + "appointment?" + "date=" + DateFormat('yyyy-MM-dd').format(date) + "T00:00:00";
+    var response = await http.get(Uri.parse(url), headers : {
+      "Authorization" : token
+    });
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    if (response.statusCode == 200){
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], date)).toList();
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,appointments);
+    }
+    else{
+      customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    }
+    return customResponse;
+  }
+  
   static Future<CustomHttpResponse> fetchAllAppointments(String token) async {
     List<Appointment> appointments = [];
     CustomHttpResponse customResponse;
