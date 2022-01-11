@@ -78,8 +78,8 @@ class PatientView extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: <Widget>[
-                                  ElevatedButton(
-                                    onPressed: () async {
+                                  InkWell(
+                                    onTap: () async {
                                       if(patient.email == null){
                                         var url = 'tel:+91'+patient.phone.toString();
                                         if (await canLaunch(url)) {
@@ -127,14 +127,8 @@ class PatientView extends StatelessWidget {
                                         } 
                                       }
                                     },
-                                    child: patient.email == null ? Icon(Icons.phone, color: Colors.white) : Icon(Icons.mail, color: Colors.white),
-                                    style: ElevatedButton.styleFrom(
-                                      shape: const CircleBorder(),
-                                      padding: const EdgeInsets.all(10),
-                                      primary: Colors.blue, // <-- Button color
-                                      onPrimary: Colors.red, // <-- Splash color
-                                    ),
-                                  )
+                                    child: patient.email == null ? Icon(Icons.phone, color: Colors.black, size: 30) : Icon(Icons.mail, color: Colors.black, size:30),
+                                  ),                                   
                                 ],
                               )
                             ],

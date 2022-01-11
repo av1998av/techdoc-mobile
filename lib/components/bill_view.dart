@@ -1,13 +1,16 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, unnecessary_new
 
+import 'package:android/models/bill.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BillView extends StatelessWidget {
   final AnimationController? animationController;
   final Animation<double>? animation;
+  final Bill bill;
 
-  const BillView({Key? key, this.animationController, this.animation})
+  const BillView({Key? key, this.animationController, this.animation, required this.bill})
       : super(key: key);
 
   @override
@@ -51,7 +54,7 @@ class BillView extends StatelessWidget {
                             padding: const EdgeInsets.only(
                                 left: 4, bottom: 8, top: 16),
                             child: Text(
-                              'Venkatesh',
+                              bill.name,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontFamily: FitnessAppTheme.fontName,
@@ -73,7 +76,7 @@ class BillView extends StatelessWidget {
                                     padding: const EdgeInsets.only(
                                         left: 4, bottom: 3),
                                     child: Text(
-                                      '\u{20B9}200',
+                                      '\u{20B9}' + bill.total.toString(),
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontFamily: FitnessAppTheme.fontName,
@@ -85,17 +88,15 @@ class BillView extends StatelessWidget {
                                   ),                                  
                                 ],
                               ),
-                              Column(
-                                
+                              Column(                                
                                 children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 40),
-                                    child: Icon(
-                                      Icons.download,
-                                      size: 40,
-                                      color: Colors.blue,
-                                    )
-                                  ),                                    
+                                  InkWell(
+                                    onTap: () {
+                                      openBrowser(bill.fileLink);
+                                    },
+                                    child: const Icon(Icons.download_rounded, size: 40, color: Colors.black),                                    
+                                  ), 
+                                  SizedBox(height: 40,)
                                 ],
                               )
                             ],
@@ -112,4 +113,11 @@ class BillView extends StatelessWidget {
       },
     );
   }
+  
+  Future<void> openBrowser(String url) async {
+    if (!await launch(url,forceSafariVC: false,forceWebView: false)) {
+      throw 'Could not launch $url';
+    }
+  }
+
 }

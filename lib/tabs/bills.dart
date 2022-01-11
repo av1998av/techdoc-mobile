@@ -1,6 +1,12 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:android/components/bill_view.dart';
+import 'package:android/helpers/shared_pref_helper.dart';
+import 'package:android/models/bill.dart';
+import 'package:android/models/custom_http_response.dart';
+import 'package:android/models/drug.dart';
+import 'package:android/models/patient.dart';
+import 'package:android/providers/api.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 
@@ -12,9 +18,13 @@ class BillsTab extends StatefulWidget {
   BillsTabState createState() => BillsTabState();
 }
 
-class BillsTabState extends State<BillsTab>
-    with TickerProviderStateMixin {
+class BillsTabState extends State<BillsTab> with TickerProviderStateMixin {
   Animation<double>? topBarAnimation;
+  
+  List<Bill> bills = [];
+  List<Patient> patients = [];
+  List<Drug> drugs = [];
+  bool isLoading = false;
 
   List<Widget> listViews = <Widget>[];
   final ScrollController scrollController = ScrollController();
@@ -26,8 +36,7 @@ class BillsTabState extends State<BillsTab>
         CurvedAnimation(
             parent: widget.animationController!,
             curve: Interval(0, 0.5, curve: Curves.fastOutSlowIn)));
-    
-    addAllListData();
+    fetchBills();
     scrollController.addListener(() {
       if (scrollController.offset >= 24) {
         if (topBarOpacity != 1.0) {
@@ -52,6 +61,62 @@ class BillsTabState extends State<BillsTab>
     });
     super.initState();
   }
+  
+  Future<void> fetchBills() async {
+    CustomHttpResponse customBillsHttpResponse;
+    CustomHttpResponse customPatientsHttpResponse;
+    CustomHttpResponse customDrugsHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      final token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customBillsHttpResponse = await Api.fetchBills(token);
+        customPatientsHttpResponse = await Api.fetchPatients(token);      
+        customDrugsHttpResponse = await Api.fetchDrugs(token);
+        if(customBillsHttpResponse.status && customPatientsHttpResponse.status && customDrugsHttpResponse.status){
+          patients = customPatientsHttpResponse.items.cast();
+          drugs = customDrugsHttpResponse.items.cast();
+          bills = customBillsHttpResponse.items.cast();
+          addAllListData(bills);
+        }
+        else{
+          String message = '';
+          if(customBillsHttpResponse.status){
+            message = customBillsHttpResponse.message;
+          }
+          else if(customPatientsHttpResponse.status){
+            message = customPatientsHttpResponse.message;
+          }
+          else{
+            message = customDrugsHttpResponse.message;
+          }
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(message),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }, 
+                    child: const Text('OK')
+                  )
+                ],
+              );
+            }
+          );
+        }
+        setState(() {
+          bills = bills;
+          isLoading = false;
+        });
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,17 +124,28 @@ class BillsTabState extends State<BillsTab>
       color: FitnessAppTheme.background,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Stack(
-          children: <Widget>[
-            getMainListViewUI(),
-            getAppBarUI(),
-            SizedBox(
-              height: MediaQuery.of(context).padding.bottom,
-            )
-          ],
-        ),
+        body: getBody()
       ),
     );
+  }
+  
+  Widget getBody(){
+    if(isLoading){
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    else{
+      return Stack(
+        children: <Widget>[
+          getMainListViewUI(),
+          getAppBarUI(),
+          SizedBox(
+            height: MediaQuery.of(context).padding.bottom,
+          )
+        ],
+      );
+    }
   }
   
   Widget getMainListViewUI() {
@@ -199,48 +275,23 @@ class BillsTabState extends State<BillsTab>
     return true;
   }
   
-  void addAllListData() {
-    const int count = 9;
+  void addAllListData(List<Bill> bills) {
+    listViews.clear();
 
-    listViews.add(
-      BillView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      BillView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      BillView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      BillView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
+    for(int i=0;i<bills.length;i++){
+      listViews.add(
+        BillView(
+          animation: Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(
+              parent: widget.animationController!,
+              curve: Interval((1 / 9) * 5, 1.0, curve: Curves.fastOutSlowIn)
+            )
+          ),
+          animationController: widget.animationController!,
+          bill: bills[i],
+        ),
+      );
+    }
     
   }
   
