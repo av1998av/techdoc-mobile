@@ -81,9 +81,7 @@ class HomePageState extends State<HomePage>
           addClick: () {
             tabIconsList.forEach((TabIconData tab) {
               if(tab.name == 'Appointments' && tab.isSelected){
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  content: Text('Yay! A SnackBar!'),
-                )); 
+                 
               }
             });            
           },

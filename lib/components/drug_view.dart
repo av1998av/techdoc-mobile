@@ -1,13 +1,15 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, unnecessary_new
 
+import 'package:android/models/drug.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 
 class DrugView extends StatelessWidget {
   final AnimationController? animationController;
   final Animation<double>? animation;
+  final Drug drug;
 
-  const DrugView({Key? key, this.animationController, this.animation})
+  const DrugView({Key? key, this.animationController, this.animation, required this.drug})
       : super(key: key);
 
   @override
@@ -51,7 +53,7 @@ class DrugView extends StatelessWidget {
                             padding: const EdgeInsets.only(
                                 left: 4, bottom: 8, top: 16),
                             child: Text(
-                              'Paracetemol',
+                              drug.name,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontFamily: FitnessAppTheme.fontName,
@@ -73,7 +75,7 @@ class DrugView extends StatelessWidget {
                                     padding: const EdgeInsets.only(
                                         left: 4, bottom: 3),
                                     child: Text(
-                                      '206',
+                                      drug.cost.toString(),
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontFamily: FitnessAppTheme.fontName,
@@ -93,7 +95,7 @@ class DrugView extends StatelessWidget {
                                     padding: const EdgeInsets.only(
                                         top: 8, bottom: 14),
                                     child: Text(
-                                      '150 mg',
+                                      drug.unit,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontFamily: FitnessAppTheme.fontName,

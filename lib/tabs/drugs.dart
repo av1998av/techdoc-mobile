@@ -1,6 +1,11 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:android/components/appointment_view.dart';
 import 'package:android/components/drug_view.dart';
+import 'package:android/helpers/shared_pref_helper.dart';
+import 'package:android/models/custom_http_response.dart';
+import 'package:android/models/drug.dart';
+import 'package:android/providers/api.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 
@@ -12,9 +17,12 @@ class DrugsTab extends StatefulWidget {
   DrugsTabState createState() => DrugsTabState();
 }
 
-class DrugsTabState extends State<DrugsTab>
-    with TickerProviderStateMixin {
+class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
   Animation<double>? topBarAnimation;
+  
+  List<Drug> drugs = [];
+  bool isLoading = false;
+  String token = '';
 
   List<Widget> listViews = <Widget>[];
   final ScrollController scrollController = ScrollController();
@@ -27,7 +35,8 @@ class DrugsTabState extends State<DrugsTab>
             parent: widget.animationController!,
             curve: Interval(0, 0.5, curve: Curves.fastOutSlowIn)));
     
-    addAllListData();
+    fetchDrugs();
+    // addAllListData();
     scrollController.addListener(() {
       if (scrollController.offset >= 24) {
         if (topBarOpacity != 1.0) {
@@ -52,6 +61,46 @@ class DrugsTabState extends State<DrugsTab>
     });
     super.initState();
   }
+  
+  Future<void> fetchDrugs() async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        token = token;
+        customHttpResponse = await Api.fetchDrugs(token);
+        if(customHttpResponse.status){
+          drugs = customHttpResponse.items.cast();
+          addAllListData(drugs);
+        }
+        else{
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(customHttpResponse.message),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }, 
+                    child: const Text('OK')
+                  )
+                ],
+              );
+            }
+          );
+        }
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,17 +108,28 @@ class DrugsTabState extends State<DrugsTab>
       color: FitnessAppTheme.background,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Stack(
-          children: <Widget>[
-            getMainListViewUI(),
-            getAppBarUI(),
-            SizedBox(
-              height: MediaQuery.of(context).padding.bottom,
-            )
-          ],
-        ),
+        body: getBody()
       ),
     );
+  }
+  
+  Widget getBody(){
+    if(isLoading){
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    else{
+      return Stack(
+        children: <Widget>[
+          getMainListViewUI(),
+          getAppBarUI(),
+          SizedBox(
+            height: MediaQuery.of(context).padding.bottom,
+          )
+        ],
+      );
+    }
   }
   
   Widget getMainListViewUI() {
@@ -199,68 +259,23 @@ class DrugsTabState extends State<DrugsTab>
     return true;
   }
   
-  void addAllListData() {
-    const int count = 9;
+  void addAllListData(List<Drug> drugs) {
+    listViews.clear();
 
-    listViews.add(
-      DrugView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      DrugView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      DrugView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      DrugView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      DrugView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      DrugView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
+    for(int i=0;i<drugs.length;i++){
+      listViews.add(
+        DrugView(
+          animation: Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(
+              parent: widget.animationController!,
+              curve: Interval((1 / 9) * 5, 1.0, curve: Curves.fastOutSlowIn)
+            )
+          ),
+          animationController: widget.animationController!,
+          drug: drugs[i],
+        ),
+      );
+    }
     
   }
   
