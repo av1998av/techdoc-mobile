@@ -1,6 +1,10 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:android/components/patient_view.dart';
+import 'package:android/helpers/shared_pref_helper.dart';
+import 'package:android/models/custom_http_response.dart';
+import 'package:android/models/patient.dart';
+import 'package:android/providers/api.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 
@@ -12,9 +16,12 @@ class PatientsTab extends StatefulWidget {
   PatientsTabState createState() => PatientsTabState();
 }
 
-class PatientsTabState extends State<PatientsTab>
-    with TickerProviderStateMixin {
+class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin {
   Animation<double>? topBarAnimation;
+  
+  List<Patient> patients = [];
+  String token = '';
+  bool isLoading = false;
 
   List<Widget> listViews = <Widget>[];
   final ScrollController scrollController = ScrollController();
@@ -26,8 +33,7 @@ class PatientsTabState extends State<PatientsTab>
         CurvedAnimation(
             parent: widget.animationController!,
             curve: Interval(0, 0.5, curve: Curves.fastOutSlowIn)));
-    
-    addAllListData();
+    fetchPatients();
     scrollController.addListener(() {
       if (scrollController.offset >= 24) {
         if (topBarOpacity != 1.0) {
@@ -52,6 +58,46 @@ class PatientsTabState extends State<PatientsTab>
     });
     super.initState();
   }
+  
+  Future<void> fetchPatients() async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.fetchPatients(token);
+        token = token;
+        if(customHttpResponse.status){
+          patients = customHttpResponse.items.cast();
+          addAllListData(patients);
+        }
+        else{
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(customHttpResponse.message),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }, 
+                    child: const Text('OK')
+                  )
+                ],
+              );
+            }
+          );
+        }
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,17 +105,28 @@ class PatientsTabState extends State<PatientsTab>
       color: FitnessAppTheme.background,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Stack(
-          children: <Widget>[
-            getMainListViewUI(),
-            getAppBarUI(),
-            SizedBox(
-              height: MediaQuery.of(context).padding.bottom,
-            )
-          ],
-        ),
+        body: getBody()
       ),
     );
+  }
+  
+  Widget getBody(){
+    if(isLoading){
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    else{
+      return Stack(
+        children: <Widget>[
+          getMainListViewUI(),
+          getAppBarUI(),
+          SizedBox(
+            height: MediaQuery.of(context).padding.bottom,
+          )
+        ],
+      );
+    }
   }
   
   Widget getMainListViewUI() {
@@ -199,68 +256,23 @@ class PatientsTabState extends State<PatientsTab>
     return true;
   }
   
-  void addAllListData() {
-    const int count = 9;
+  void addAllListData(List<Patient> patients) {
+    listViews.clear();
 
-    listViews.add(
-      PatientView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      PatientView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      PatientView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      PatientView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      PatientView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
-    
-    listViews.add(
-      PatientView(
-        animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: widget.animationController!,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: widget.animationController!,
-      ),
-    );
+    for(int i=0;i<patients.length;i++){
+      listViews.add(
+        PatientView(
+          animation: Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(
+              parent: widget.animationController!,
+              curve: Interval((1 / 9) * 5, 1.0, curve: Curves.fastOutSlowIn)
+            )
+          ),
+          animationController: widget.animationController!,
+          patient: patients[i],
+        ),
+      );
+    }    
     
   }
   

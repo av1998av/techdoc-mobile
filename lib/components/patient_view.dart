@@ -1,14 +1,17 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, unnecessary_new
 
+import 'package:android/models/patient.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PatientView extends StatelessWidget {
   final AnimationController? animationController;
   final Animation<double>? animation;
+  final Patient patient;
 
-  const PatientView({Key? key, this.animationController, this.animation})
-      : super(key: key);
+  PatientView({Key? key, this.animationController, this.animation, required this.patient}): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +62,7 @@ class PatientView extends StatelessWidget {
                                     padding: const EdgeInsets.only(
                                         left: 4, bottom: 3),
                                     child: Text(
-                                      'Venkatesh',
+                                      patient.name,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontFamily: FitnessAppTheme.fontName,
@@ -75,15 +78,63 @@ class PatientView extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: <Widget>[
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(
-                                        Icons.phone,                                                                              
-                                        size: 35,
-                                      ),                                      
-                                    ],
-                                  ),                                  
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      if(patient.email == null){
+                                        var url = 'tel:+91'+patient.phone.toString();
+                                        if (await canLaunch(url)) {
+                                          await launch(url);
+                                        } 
+                                        else {
+                                          Alert(
+                                            context: context,
+                                            style: alertStyle,
+                                            title: "Could not open mobile",
+                                            buttons: [
+                                              DialogButton(
+                                                child: Text(
+                                                  "Close",
+                                                  style: TextStyle(color: Colors.white, fontSize: 20),
+                                                ),
+                                                onPressed: () => Navigator.pop(context),
+                                                color: Color.fromRGBO(0, 179, 134, 1.0),
+                                              ),
+                                            ]
+                                          ).show();
+                                        } 
+                                      }
+                                      else if(patient.phone == null){
+                                        var url = 'mailto:'+patient.email.toString();
+                                        if (await canLaunch(url)) {
+                                          await launch(url);
+                                        } 
+                                        else {
+                                          Alert(
+                                            context: context,
+                                            style: alertStyle,
+                                            title: "Could not open mail",
+                                            buttons: [
+                                              DialogButton(
+                                                child: Text(
+                                                  "Close",
+                                                  style: TextStyle(color: Colors.white, fontSize: 20),
+                                                ),
+                                                onPressed: () => Navigator.pop(context),
+                                                color: Color.fromRGBO(0, 179, 134, 1.0),
+                                              ),
+                                            ]
+                                          ).show();
+                                        } 
+                                      }
+                                    },
+                                    child: patient.email == null ? Icon(Icons.phone, color: Colors.white) : Icon(Icons.mail, color: Colors.white),
+                                    style: ElevatedButton.styleFrom(
+                                      shape: const CircleBorder(),
+                                      padding: const EdgeInsets.all(10),
+                                      primary: Colors.blue, // <-- Button color
+                                      onPrimary: Colors.red, // <-- Splash color
+                                    ),
+                                  )
                                 ],
                               )
                             ],
@@ -187,4 +238,21 @@ class PatientView extends StatelessWidget {
       },
     );
   }
+  var alertStyle = AlertStyle(
+    animationType: AnimationType.fromTop,
+    isCloseButton: false,
+    isOverlayTapDismiss: true,
+    descStyle: const TextStyle(fontWeight: FontWeight.bold),
+    animationDuration: Duration(milliseconds: 400),
+    alertBorder: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20.0),
+      side: BorderSide(
+        color: Colors.grey,
+      ),
+    ),
+    titleStyle: const TextStyle(
+      color: Color.fromRGBO(91, 55, 185, 1.0),
+    ),
+  );
+
 }
