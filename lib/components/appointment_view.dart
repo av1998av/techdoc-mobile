@@ -8,9 +8,35 @@ class AppointmentView extends StatelessWidget {
   final AnimationController? animationController;
   final Animation<double>? animation;
   Appointment appointment;
+  final Function(int) cancelAppointment;
+  final Function(int) completeAppointment;
 
-  AppointmentView({Key? key, this.animationController, this.animation, required this.appointment})
+  AppointmentView({Key? key, this.animationController, this.animation, required this.appointment, required this.cancelAppointment, required this.completeAppointment})
       : super(key: key);
+      
+  getIcon(){
+    if(appointment.status == 'Completed'){
+      return Icon(Icons.check, color: Colors.black, size: 30);
+    }
+    else if(appointment.status == 'Cancelled'){
+      return Icon(Icons.close, color: Colors.black, size: 30);
+    }
+    else {
+      return Icon(Icons.lock_clock, color: Colors.black, size: 30);
+    }
+  }
+  
+  getColor(){
+    if(appointment.status == 'Completed'){
+      return Colors.blue[200];
+    }
+    else if(appointment.status == 'Cancelled'){
+      return Colors.red[200];
+    }
+    else {
+      return Colors.green[200];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,14 +46,12 @@ class AppointmentView extends StatelessWidget {
         return FadeTransition(
           opacity: animation!,
           child: new Transform(
-            transform: new Matrix4.translationValues(
-                0.0, 30 * (1.0 - animation!.value), 0.0),
+            transform: new Matrix4.translationValues(0.0, 30 * (1.0 - animation!.value), 0.0),
             child: Padding(
-              padding: const EdgeInsets.only(
-                  left: 24, right: 24, top: 16, bottom: 18),
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 18),
               child: Container(
                 decoration: BoxDecoration(
-                  color: FitnessAppTheme.white,
+                  color: getColor(),
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(8.0),
                       bottomLeft: Radius.circular(8.0),
@@ -43,8 +67,7 @@ class AppointmentView extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Padding(
-                      padding:
-                          const EdgeInsets.only(top: 16, left: 16, right: 24),
+                      padding: const EdgeInsets.only(top: 16, left: 16, right: 24),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +94,19 @@ class AppointmentView extends StatelessWidget {
                                     ),
                                   )                                  
                                 ],
-                              ),                              
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: <Widget>[
+                                  InkWell(
+                                    onTap: () async {
+                                      
+                                    },
+                                    child: getIcon(),
+                                  ),                                   
+                                ],
+                              )
                             ],
                           )
                         ],
@@ -98,17 +133,22 @@ class AppointmentView extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text(
-                                  'Cancel',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: FitnessAppTheme.fontName,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    letterSpacing: -0.2,
-                                    color: Colors.red,
-                                  ),
-                                ),                                
+                                InkWell(
+                                      onTap: () async {
+                                        cancelAppointment(appointment.id);
+                                      },
+                                      child: Text(
+                                        'Cancel',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontFamily: FitnessAppTheme.fontName,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                          letterSpacing: -0.2,
+                                          color: Colors.red,
+                                        ),
+                                      ), 
+                                    )                                
                               ],
                             ),
                           ),
@@ -121,17 +161,22 @@ class AppointmentView extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: <Widget>[
-                                    Text(
-                                      'Complete',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontFamily: FitnessAppTheme.fontName,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16,
-                                        letterSpacing: -0.2,
-                                        color: Colors.green,
-                                      ),
-                                    ),                                    
+                                    InkWell(
+                                      onTap: () async {
+                                        completeAppointment(appointment.id);
+                                      },
+                                      child: Text(
+                                        'Complete',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontFamily: FitnessAppTheme.fontName,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                          letterSpacing: -0.2,
+                                          color: Colors.green,
+                                        ),
+                                      ), 
+                                    )                                   
                                   ],
                                 ),
                               ],

@@ -9,6 +9,7 @@ import 'package:android/models/patient.dart';
 import 'package:android/providers/api.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:intl/intl.dart';
 
 class AppointmentsTab extends StatefulWidget {
@@ -25,7 +26,7 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
   bool isLoading = false;
   String token = '';
   DateTime today = DateTime.now();
-
+  final TextEditingController eventController = TextEditingController();
   Animation<double>? topBarAnimation;
 
   List<Widget> listViews = <Widget>[];
@@ -115,6 +116,167 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
     });
   }
 
+  addAppointment(Appointment appointment) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.addAppointment(appointment, token);
+        token = token;
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){
+          fetchAllAppointments(); 
+        }
+      }
+    });
+  }
+  
+  cancelAppointment(int id) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.cancelAppointment(token, id);
+        token = token;
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){
+          fetchAllAppointments(); 
+        }
+      }
+    });
+  }
+
+  completeAppointment(int id) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.completeAppointment(token, id);
+        token = token;
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){
+          fetchAllAppointments(); 
+        }
+      }
+    });
+  }
+
+  List<Patient> getSuggestions(pattern) {
+    return patients.where((patient) => patient.name.toLowerCase().contains(pattern)).toList();
+  }
+  
+  showAddDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text("Add Appointment"),
+        content: TypeAheadField(
+          textFieldConfiguration: TextFieldConfiguration(
+            decoration: InputDecoration(
+              labelText: 'Patient',
+              border: OutlineInputBorder()
+            ),
+            controller: eventController
+          ),
+          suggestionsCallback: (pattern) async {
+            return getSuggestions(pattern);
+          },
+          itemBuilder: (context, Patient patient) {
+            return ListTile(
+              title: Text(patient.name),
+              subtitle: Text(patient.id)
+            );
+          }, 
+          onSuggestionSelected: (Patient patient) {
+            eventController.text = patient.id;
+          },
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text("Ok"),
+            onPressed: (){
+              if(eventController.text.isEmpty){
+                Navigator.pop(context);
+                return;
+              }
+              else{
+                var appointment = Appointment(0,'',eventController.text,'',today);
+                Navigator.pop(context);
+                addAppointment(appointment);              
+              }
+            }
+          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+        ],
+      )
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -134,14 +296,17 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
       );
     }
     else{
-      return Stack(
-        children: <Widget>[
-          getMainListViewUI(),
-          getAppBarUI(),
-          SizedBox(
-            height: MediaQuery.of(context).padding.bottom,
-          )
-        ],
+      return RefreshIndicator(
+        child: Stack(
+          children: <Widget>[
+            getMainListViewUI(),
+            getAppBarUI(),
+            SizedBox(
+              height: MediaQuery.of(context).padding.bottom,
+            )
+          ],
+        ),
+        onRefresh: fetchAllAppointments
       );
     }
   }
@@ -352,6 +517,8 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
           ),
           animationController: widget.animationController!,
           appointment: appointments[i],
+          cancelAppointment: cancelAppointment,
+          completeAppointment: completeAppointment,
         ),
       );
     }

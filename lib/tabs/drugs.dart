@@ -19,7 +19,13 @@ class DrugsTab extends StatefulWidget {
 
 class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
   Animation<double>? topBarAnimation;
-  
+  final nameController = TextEditingController();
+  final costController = TextEditingController();
+  final unitController = TextEditingController();
+  final nameEditController = TextEditingController();
+  final costEditController = TextEditingController();
+  final unitEditController = TextEditingController();
+
   List<Drug> drugs = [];
   bool isLoading = false;
   String token = '';
@@ -60,6 +66,203 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
       }
     });
     super.initState();
+  }
+  
+  showAddDialog() async{
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          scrollable: true,
+          title: const Text('Add Drug/Process'),
+          content: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Form(
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',                
+                  ),
+                ),
+                TextFormField(
+                  controller: unitController,
+                  decoration: const InputDecoration(
+                    labelText: 'Unit'
+                  ),
+                ),
+                TextFormField(
+                  controller: costController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Price',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+            ),
+            onPressed: () async { 
+              String name = nameController.text;
+              String unit = unitController.text;
+              int cost = int.parse(costController.text);
+              if (name != ''){
+                Navigator.pop(context);
+                await addDrug(name, cost, unit);
+              }
+            },
+            child: const Text('Submit'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            }, 
+            child: const Text('Cancel')
+          )
+        ],
+      );
+    });
+  }
+  
+  showUpdateDialog(drug) async{
+    nameEditController.text = drug.name;
+    costEditController.text = drug.cost.toString();
+    unitEditController.text = drug.unit;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          scrollable: true,
+          title: const Text('Update Drug/Process'),
+          content: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Form(
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                  controller: nameEditController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',                
+                  ),
+                ),
+                TextFormField(
+                  controller: unitEditController,
+                  decoration: const InputDecoration(
+                    labelText: 'Unit'
+                  ),
+                ),
+                TextFormField(
+                  controller: costEditController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Price',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+            ),
+            onPressed: () async { 
+              String name = nameEditController.text;
+              String unit = unitEditController.text;
+              int cost = int.parse(costEditController.text);
+              if (name != ''){
+                Navigator.pop(context);
+                await updateDrug(drug.id.toString(), name, cost, unit);
+              }
+            },
+            child: const Text('Submit'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            }, 
+            child: const Text('Cancel')
+          )
+        ],
+      );
+    });
+  }
+  
+  addDrug(String name, int cost, String unit) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.addDrug(name, unit, cost, token);
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){          
+          fetchDrugs();
+        }
+      }
+    });
+  }
+  
+  updateDrug(String id, String name, int cost, String unit) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.updateDrug(id, name, unit, cost, token);
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){          
+          fetchDrugs();
+        }
+      }
+    });
   }
   
   Future<void> fetchDrugs() async {
@@ -120,14 +323,17 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
       );
     }
     else{
-      return Stack(
-        children: <Widget>[
-          getMainListViewUI(),
-          getAppBarUI(),
-          SizedBox(
-            height: MediaQuery.of(context).padding.bottom,
-          )
-        ],
+      return RefreshIndicator(
+        child: Stack(
+          children: <Widget>[
+            getMainListViewUI(),
+            getAppBarUI(),
+            SizedBox(
+              height: MediaQuery.of(context).padding.bottom,
+            )
+          ],
+        ),
+        onRefresh: fetchDrugs
       );
     }
   }
@@ -273,6 +479,7 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
           ),
           animationController: widget.animationController!,
           drug: drugs[i],
+          updateDrug : showUpdateDialog
         ),
       );
     }

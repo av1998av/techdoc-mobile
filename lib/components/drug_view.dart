@@ -8,8 +8,8 @@ class DrugView extends StatelessWidget {
   final AnimationController? animationController;
   final Animation<double>? animation;
   final Drug drug;
-
-  const DrugView({Key? key, this.animationController, this.animation, required this.drug})
+  final Function(Drug) updateDrug;
+  const DrugView({Key? key, this.animationController, this.animation, required this.drug, required this.updateDrug})
       : super(key: key);
 
   @override
@@ -27,7 +27,7 @@ class DrugView extends StatelessWidget {
                   left: 24, right: 24, top: 16, bottom: 18),
               child: Container(
                 decoration: BoxDecoration(
-                  color: FitnessAppTheme.white,
+                  color: Colors.orange[50],
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(8.0),
                       bottomLeft: Radius.circular(8.0),
@@ -134,17 +134,22 @@ class DrugView extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text(
-                                  'Refill',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: FitnessAppTheme.fontName,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 18,
-                                    letterSpacing: -0.2,
-                                    color: Colors.green,
+                                InkWell(
+                                  child: Text(
+                                    'Refill',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: FitnessAppTheme.fontName,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 18,
+                                      letterSpacing: -0.2,
+                                      color: Colors.green,
+                                    ),
                                   ),
-                                ),                                
+                                  onTap: () async{
+                                    await updateDrug(drug);
+                                  },
+                                )                               
                               ],
                             ),
                           ),

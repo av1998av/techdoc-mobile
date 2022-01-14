@@ -22,6 +22,17 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
   List<Patient> patients = [];
   String token = '';
   bool isLoading = false;
+  final nameController = TextEditingController();
+  final dobController = TextEditingController();
+  final bloodGroupController = TextEditingController();
+  final genderController = TextEditingController();
+  final emailController = TextEditingController();
+  final phoneController = TextEditingController();
+  final allergiesController = TextEditingController();
+  final notesController = TextEditingController();
+  final preferredCommuncationController = TextEditingController();
+  final heightController = TextEditingController();
+  final weightController = TextEditingController();
 
   List<Widget> listViews = <Widget>[];
   final ScrollController scrollController = ScrollController();
@@ -57,6 +68,168 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
       }
     });
     super.initState();
+  }
+  
+  addPatient(Patient patient){
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        var customHttpResponse = await Api.addPatient(patient, token);
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){
+          fetchPatients();
+        }
+      }
+    });
+  }
+
+  showAddDialog() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          scrollable: true,
+          title: const Text('Add Drug/Process'),
+          content: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Form(
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',                
+                  ),
+                ),
+                TextFormField(
+                  controller: dobController,
+                  decoration: const InputDecoration(
+                    labelText: 'D.O.B'
+                  ),
+                ),
+                TextFormField(
+                  controller: bloodGroupController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Blood Group',
+                  ),
+                ),
+                TextFormField(
+                  controller: genderController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Gender',
+                  ),
+                ),
+                TextFormField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Phone',
+                  ),
+                ),
+                TextFormField(
+                  controller: emailController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                  ),
+                ),
+                TextFormField(
+                  controller: allergiesController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Allergies',
+                  ),
+                ),
+                TextFormField(
+                  controller: notesController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes',
+                  ),
+                ),
+                TextFormField(
+                  controller: preferredCommuncationController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Preferred Communication',
+                  ),
+                ),
+                TextFormField(
+                  controller: heightController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Height',
+                  ),
+                ),
+                TextFormField(
+                  controller: weightController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Weight',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+            ),
+            onPressed: () async { 
+              String name = nameController.text;
+              String dob = dobController.text;
+              String bloodGroup = bloodGroupController.text;
+              String gender = genderController.text;
+              String phone = phoneController.text;
+              String email = emailController.text;
+              String allergies = allergiesController.text;
+              String notes = notesController.text;
+              String preferredCommunication = preferredCommuncationController.text;
+              int height = int.parse(heightController.text);
+              int weight = int.parse(weightController.text);
+              Patient patient = Patient('fakeId',name, dob, bloodGroup, gender, phone, email, allergies, notes, preferredCommunication, height, weight);
+              if (name != ''){
+                Navigator.pop(context);
+                await addPatient(patient);
+              }
+            },
+            child: const Text('Submit'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            }, 
+            child: const Text('Cancel')
+          )
+        ],
+      );
+    });
   }
   
   Future<void> fetchPatients() async {
@@ -117,14 +290,17 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
       );
     }
     else{
-      return Stack(
-        children: <Widget>[
-          getMainListViewUI(),
-          getAppBarUI(),
-          SizedBox(
-            height: MediaQuery.of(context).padding.bottom,
-          )
-        ],
+      return RefreshIndicator(
+        child: Stack(
+          children: <Widget>[
+            getMainListViewUI(),
+            getAppBarUI(),
+            SizedBox(
+              height: MediaQuery.of(context).padding.bottom,
+            )
+          ],
+        ),
+        onRefresh: fetchPatients
       );
     }
   }

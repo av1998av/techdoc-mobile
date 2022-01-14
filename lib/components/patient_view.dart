@@ -28,7 +28,7 @@ class PatientView extends StatelessWidget {
                   left: 24, right: 24, top: 16, bottom: 18),
               child: Container(
                 decoration: BoxDecoration(
-                  color: FitnessAppTheme.white,
+                  color: Colors.purple[50],
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(8.0),
                       bottomLeft: Radius.circular(8.0),
@@ -141,8 +141,7 @@ class PatientView extends StatelessWidget {
                           left: 24, right: 24, top: 8, bottom: 8),
                       child: Container(
                         height: 2,
-                        decoration: BoxDecoration(
-                          color: FitnessAppTheme.background,
+                        decoration: BoxDecoration(                          
                           borderRadius: BorderRadius.all(Radius.circular(4.0)),
                         ),
                       ),

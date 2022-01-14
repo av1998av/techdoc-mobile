@@ -12,11 +12,14 @@ class HomePage extends StatefulWidget {
   HomePageState createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage>
-    with TickerProviderStateMixin {
+class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   AnimationController? animationController;
 
   List<TabIconData> tabIconsList = TabIconData.tabIconsList;
+  final GlobalKey<AppointmentsTabState> appointmentsTabState = GlobalKey<AppointmentsTabState>();
+  final GlobalKey<DrugsTabState> drugsTabState = GlobalKey<DrugsTabState>();
+  final GlobalKey<PatientsTabState> patientsTabState = GlobalKey<PatientsTabState>();
+  final GlobalKey<BillsTabState> billsTabState = GlobalKey<BillsTabState>();
 
   Widget tabBody = Container(
     color: FitnessAppTheme.background,
@@ -30,7 +33,7 @@ class HomePageState extends State<HomePage>
     tabIconsList[0].isSelected = true;
 
     animationController = AnimationController(duration: const Duration(milliseconds: 600), vsync: this);
-    tabBody = AppointmentsTab(animationController: animationController);
+    tabBody = AppointmentsTab(animationController: animationController,key: appointmentsTabState);
     super.initState();
   }
 
@@ -81,7 +84,16 @@ class HomePageState extends State<HomePage>
           addClick: () {
             tabIconsList.forEach((TabIconData tab) {
               if(tab.name == 'Appointments' && tab.isSelected){
-                 
+                 appointmentsTabState.currentState!.showAddDialog();
+              }
+              else if(tab.name == 'Drugs' && tab.isSelected){
+                 drugsTabState.currentState!.showAddDialog();
+              }
+              else if(tab.name == 'Bills' && tab.isSelected){
+                 billsTabState.currentState!.showAddDialog();
+              }
+              else if(tab.name == 'Patients' && tab.isSelected){
+                 patientsTabState.currentState!.showAddDialog();
               }
             });            
           },
@@ -93,7 +105,7 @@ class HomePageState extends State<HomePage>
                 }
                 setState(() {
                   tabBody =
-                      AppointmentsTab(animationController: animationController);
+                      AppointmentsTab(animationController: animationController,key: appointmentsTabState);
                 });
               });
             }
@@ -104,7 +116,7 @@ class HomePageState extends State<HomePage>
                 }
                 setState(() {
                   tabBody =
-                      DrugsTab(animationController: animationController);
+                      DrugsTab(animationController: animationController,key: drugsTabState);
                 });
               });
             }
@@ -115,7 +127,7 @@ class HomePageState extends State<HomePage>
                 }
                 setState(() {
                   tabBody =
-                      PatientsTab(animationController: animationController);
+                      PatientsTab(animationController: animationController,key: patientsTabState);
                 });
               });
             }
@@ -126,7 +138,7 @@ class HomePageState extends State<HomePage>
                 }
                 setState(() {
                   tabBody =
-                      BillsTab(animationController: animationController);
+                      BillsTab(animationController: animationController,key: billsTabState);
                 });
               });
             }
