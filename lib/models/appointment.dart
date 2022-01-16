@@ -6,8 +6,10 @@ class Appointment {
   final String status;
   final DateTime date;
   final int id;
+  final String? prescriptionFileLink;
+  final String? notes;
 
-  const Appointment(this.id, this.patientName, this.patientId, this.status, this.date);
+  const Appointment(this.id, this.patientName, this.patientId, this.status, this.date, this.prescriptionFileLink,this.notes);
   
   @override
   String toString() {

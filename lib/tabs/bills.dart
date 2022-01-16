@@ -451,7 +451,8 @@ class BillsTabState extends State<BillsTab> with TickerProviderStateMixin {
                                     items: [                                      
                                       PopupMenuItem<String>(child: const Text('Settings')),
                                       PopupMenuItem<String>(child: const Text('Logout'), onTap: () async {
-                                        
+                                        await SharePreferenceHelper.logout();
+                                        Navigator.pushReplacementNamed(context, '/login');
                                       })
                                     ],
                                     elevation: 8.0,

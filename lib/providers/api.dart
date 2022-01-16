@@ -170,7 +170,7 @@ class Api{
     });
     var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if (response.statusCode == 200){
-      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], start)).toList();
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], start, appointment['Prescription']['fileLink'], appointment['notes'])).toList();
       customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,appointments);
     }
     else{
@@ -188,7 +188,7 @@ class Api{
     });
     var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if (response.statusCode == 200){
-      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], date)).toList();
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], date, appointment['Prescription']?['fileLink'], appointment['notes'])).toList();
       customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,appointments);
     }
     else{
@@ -206,7 +206,7 @@ class Api{
     });
     var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if (response.statusCode == 200){
-      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(appointment['datetime']))).toList();
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(appointment['datetime']), appointment['Prescription']['fileLink'], appointment['notes'])).toList();
       customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,appointments);
     }
     else{
@@ -260,6 +260,25 @@ class Api{
     return customResponse;
   }
   
+  static Future<CustomHttpResponse> updateAppointment(String token, int id, String note) async {
+    var body = {
+      "notes" : note      
+    };
+    CustomHttpResponse customResponse;
+    var url = baseUrl + "appointment/update/"+id.toString();
+    var response = await post(
+      Uri.parse(url), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization" : token
+      },
+      body: json.encode(body),
+    );
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
+  }
+  
   static Future<CustomHttpResponse> fetchBills(String token) async {
     List<Bill> bills = [];
     CustomHttpResponse customResponse;
@@ -297,6 +316,35 @@ class Api{
     body['entries'] = entriesFinal;
     var response = await post(
       Uri.parse(baseUrl + "bill"), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization" : token
+      },
+      body: json.encode(body),
+    );
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
+  }
+  
+  static Future<CustomHttpResponse> addPrescription(String patientId, int appointmentId, List entries, String token) async{
+    CustomHttpResponse customResponse;
+    var body = {
+      "patientId" : patientId,
+      "appointmentId" : appointmentId
+    };
+    List entriesFinal = [];
+    for (var entry in entries) {
+      entriesFinal.add({
+        "name" : entry['name'],
+        "schedule" : entry['schedule'],
+        "quantity" : entry['quantity'],
+        "drugId" : int.parse(entry['drugId'])
+      });
+    }
+    body['entries'] = entriesFinal;
+    var response = await post(
+      Uri.parse(baseUrl + "prescription"), headers : {
         "Accept": "application/json",
         "Content-Type": "application/json",
         "Authorization" : token

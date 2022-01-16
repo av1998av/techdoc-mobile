@@ -1,10 +1,14 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:math';
+
 import 'package:android/components/appointment_view.dart';
 import 'package:android/components/appointments_summary.dart';
+import 'package:android/components/counter.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/models/appointment.dart';
 import 'package:android/models/custom_http_response.dart';
+import 'package:android/models/drug.dart';
 import 'package:android/models/patient.dart';
 import 'package:android/providers/api.dart';
 import 'package:android/themes/themes.dart';
@@ -23,11 +27,177 @@ class AppointmentsTab extends StatefulWidget {
 class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderStateMixin {
   List<Appointment> allAppointments = [];
   List<Patient> patients = [];
+  List<Drug> drugs = [];
   bool isLoading = false;
   String token = '';
   DateTime today = DateTime.now();
+  final numberNotif = ValueNotifier<int>(0);
   final TextEditingController eventController = TextEditingController();
+  final TextEditingController notesController = TextEditingController();
+  final TextEditingController patientController = TextEditingController();
+  final List<TextEditingController> drugControllers = List.generate(10, (i) => TextEditingController());
+  final List<TextEditingController> quantityControllers = List.generate(10, (i) => TextEditingController());
+  final List<TextEditingController> scheduleControllers = List.generate(10, (i) => TextEditingController());
   Animation<double>? topBarAnimation;
+  
+  List<Patient> getPatientSuggestions(pattern) {
+    return patients.where((patient) => patient.name.toLowerCase().contains(pattern)).toList();
+  }
+  
+  List<Drug> getDrugSuggestions(pattern) {
+    return drugs.where((drug) => drug.name.toLowerCase().contains(pattern)).toList();
+  }
+  
+  addPrescription (String patientId, int appointmentId, List entries) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.addPrescription(patientId, appointmentId, entries, token);
+        token = token;
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){          
+          fetchAllAppointments();
+        }
+      }
+    });
+  }
+  
+  showAddPrescriptionDialog(int appointmentId, String patientId) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        scrollable: true,
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.all(10),
+        title: Text("New Prescription"),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width*0.75,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Form(
+              child: Column(
+                children: <Widget>[                  
+                  NumericStepButton(
+                    maxValue: 20,
+                    minValue: 1,
+                    current: max(1,numberNotif.value),
+                    onChanged: (value) {
+                      numberNotif.value = value;                      
+                    },
+                  ),
+                  ValueListenableBuilder(valueListenable: numberNotif, builder: (context, int value, widget){
+                    return Column(
+                      children: <Widget>[
+                        for (int i=0;i<max(value,1);i++) Container(
+                          padding: EdgeInsets.all(10),
+                          margin: EdgeInsets.only(top:10),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.lightBlue
+                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(10.0))
+                          ),
+                          child: getForm(i)
+                        )
+                      ]
+                    );
+                  }),
+                ],
+              )
+            )
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text("Ok"),
+            onPressed: () {
+              Navigator.pop(context);
+              List entries = [];
+              int total = 0;
+              var list = Iterable<int>.generate(max(numberNotif.value,1)).toList();
+              for (var item in list) {
+                entries.add({
+                  "name" : '',
+                  "schedule" : scheduleControllers[item].text,
+                  "quantity" : quantityControllers[item].text,
+                  "drugId" : drugControllers[item].text
+                });
+              }
+              addPrescription(patientId,appointmentId,entries);
+            }
+          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+        ],
+      ),
+    );
+  }
+  
+  Widget getForm(int index){    
+    return Column(
+      children: <Widget>[
+        TypeAheadField(
+          textFieldConfiguration: TextFieldConfiguration(
+            decoration: InputDecoration(
+              labelText: 'Drug',
+              border: OutlineInputBorder()
+            ),
+            controller: drugControllers[index]
+          ),
+          suggestionsCallback: (pattern) async {
+            return getDrugSuggestions(pattern);
+          },
+          itemBuilder: (context, Drug drug) {
+            return ListTile(
+              title: Text(drug.name),
+              subtitle: Text(drug.unit)
+            );
+          }, 
+          onSuggestionSelected: (Drug drug) {
+            drugControllers[index].text = drug.id.toString();            
+          },
+        ),
+        const SizedBox(height: 10,),
+        TextFormField(
+          decoration: const InputDecoration(
+            labelText: 'Schecule',
+            border: OutlineInputBorder(),
+          ),
+          controller: scheduleControllers[index],
+        ),
+        const SizedBox(height: 10,),
+        TextFormField(
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Quantity',
+            border: OutlineInputBorder()
+          ),
+          controller: quantityControllers[index],
+        )
+      ]
+    );
+  }
 
   List<Widget> listViews = <Widget>[];
   final ScrollController scrollController = ScrollController();
@@ -40,7 +210,7 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
             parent: widget.animationController!,
             curve: Interval(0, 0.5, curve: Curves.fastOutSlowIn)));
     
-    fetchAllAppointments();    
+    fetchAllAppointments();
     scrollController.addListener(() {
       if (scrollController.offset >= 24) {
         if (topBarOpacity != 1.0) {
@@ -69,6 +239,7 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
   Future<void> fetchAllAppointments() async {
     CustomHttpResponse customAppointmentsHttpResponse;
     CustomHttpResponse customPatientsHttpResponse;
+    CustomHttpResponse customDrugsHttpResponse;
     setState(() {
       isLoading = true;
     });
@@ -77,11 +248,13 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
       if(token != ''){
         token = token;
         customAppointmentsHttpResponse = await Api.fetchDateAppointments(token,today);  
-        customPatientsHttpResponse = await Api.fetchPatients(token);      
+        customPatientsHttpResponse = await Api.fetchPatients(token); 
+        customDrugsHttpResponse = await Api.fetchDrugs(token);     
         token = token;
         if(customPatientsHttpResponse.status && customAppointmentsHttpResponse.status){
           allAppointments = customAppointmentsHttpResponse.items.cast();
           patients = customPatientsHttpResponse.items.cast();
+          drugs = customDrugsHttpResponse.items.cast();
           addAllListData(allAppointments);
         }
         else{
@@ -89,8 +262,11 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
           if(customPatientsHttpResponse.status){
             message = customPatientsHttpResponse.message;
           }
+          else if(customPatientsHttpResponse.status){
+            message = customPatientsHttpResponse.message;
+          }
           else{
-            message = customAppointmentsHttpResponse.message;
+            message = customDrugsHttpResponse.message;
           }
           showDialog(
             context: context,
@@ -223,6 +399,142 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
       }
     });
   }
+  
+  updateAppointment(int id) async {    
+    CustomHttpResponse customHttpResponse;
+    await showDialog(
+      context: context, 
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Add a note'),
+          content: TextFormField(
+            controller: notesController,
+            decoration: const InputDecoration(
+              labelText: 'Note',                
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Navigator.pop(context);
+                setState(() {
+                  isLoading = true;
+                });                
+                Future.delayed(const Duration(seconds: 3), () async {
+                  Navigator.pop(context);
+                  var token = await SharePreferenceHelper.getUserToken();
+                  if(token != ''){                    
+                    customHttpResponse = await Api.updateAppointment(token, id, notesController.text.toString());
+                    token = token;                    
+                    setState(() {
+                      isLoading = false;
+                    });                    
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context2) {
+                        return AlertDialog(
+                          title: Text(customHttpResponse.message),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context2);                                
+                                notesController.dispose();
+                                fetchAllAppointments(); 
+                              }, 
+                              child: const Text('OK')
+                            )
+                          ],
+                        );
+                      }
+                    );                    
+                  }
+                });
+              }, 
+              child: const Text('OK')
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                notesController.dispose;
+                setState(() {
+                  isLoading = false;
+                });
+              }, 
+              child: const Text('Cancel')
+            )
+          ],
+        );
+      }
+    );
+  }
+  
+  addPrescriptionModal(int id) async {    
+    CustomHttpResponse customHttpResponse;
+    await showDialog(
+      context: context, 
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Add a prescription'),
+          content: TextFormField(
+            controller: notesController,
+            decoration: const InputDecoration(
+              labelText: 'Note',                
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Navigator.pop(context);
+                setState(() {
+                  isLoading = true;
+                });                
+                Future.delayed(const Duration(seconds: 3), () async {
+                  Navigator.pop(context);
+                  var token = await SharePreferenceHelper.getUserToken();
+                  if(token != ''){                    
+                    customHttpResponse = await Api.updateAppointment(token, id, notesController.text.toString());
+                    token = token;                    
+                    setState(() {
+                      isLoading = false;
+                    });                    
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context2) {
+                        return AlertDialog(
+                          title: Text(customHttpResponse.message),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context2);                                
+                                notesController.dispose();
+                                fetchAllAppointments(); 
+                              }, 
+                              child: const Text('OK')
+                            )
+                          ],
+                        );
+                      }
+                    );                    
+                  }
+                });
+              }, 
+              child: const Text('OK')
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                notesController.dispose;
+                setState(() {
+                  isLoading = false;
+                });
+              }, 
+              child: const Text('Cancel')
+            )
+          ],
+        );
+      }
+    );
+  }
 
   List<Patient> getSuggestions(pattern) {
     return patients.where((patient) => patient.name.toLowerCase().contains(pattern)).toList();
@@ -264,7 +576,7 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
                 return;
               }
               else{
-                var appointment = Appointment(0,'',eventController.text,'',today);
+                var appointment = Appointment(0,'',eventController.text,'',today,'','');
                 Navigator.pop(context);
                 addAppointment(appointment);              
               }
@@ -275,8 +587,6 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
       )
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -519,6 +829,8 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
           appointment: appointments[i],
           cancelAppointment: cancelAppointment,
           completeAppointment: completeAppointment,
+          updateAppointment: updateAppointment,
+          addPrescription: showAddPrescriptionDialog,
         ),
       );
     }

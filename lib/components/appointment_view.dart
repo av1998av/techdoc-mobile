@@ -2,7 +2,10 @@
 
 import 'package:android/models/appointment.dart';
 import 'package:android/themes/themes.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+
+import 'appointment_expanded.dart';
 
 class AppointmentView extends StatelessWidget {
   final AnimationController? animationController;
@@ -10,8 +13,10 @@ class AppointmentView extends StatelessWidget {
   Appointment appointment;
   final Function(int) cancelAppointment;
   final Function(int) completeAppointment;
-
-  AppointmentView({Key? key, this.animationController, this.animation, required this.appointment, required this.cancelAppointment, required this.completeAppointment})
+  final Function(int) updateAppointment;
+  final Function(int, String) addPrescription;
+  
+  AppointmentView({Key? key, this.animationController, this.animation, required this.appointment, required this.cancelAppointment, required this.completeAppointment, required this.updateAppointment, required this.addPrescription})
       : super(key: key);
       
   getIcon(){
@@ -64,14 +69,16 @@ class AppointmentView extends StatelessWidget {
                         blurRadius: 10.0),
                   ],
                 ),
-                child: Column(
-                  children: <Widget>[
+                child: InkWell(
+                  child: Column(
+                    children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.only(top: 16, left: 16, right: 24),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[                          Row(
+                        children: <Widget>[
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
@@ -191,16 +198,24 @@ class AppointmentView extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: <Widget>[
-                                    Text(
-                                      'View',
-                                      style: TextStyle(
-                                        fontFamily: FitnessAppTheme.fontName,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16,
-                                        letterSpacing: -0.2,
-                                        color: Colors.blue,
+                                    InkWell(
+                                      child: Text(
+                                        'View',
+                                        style: TextStyle(
+                                          fontFamily: FitnessAppTheme.fontName,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                          letterSpacing: -0.2,
+                                          color: Colors.blue,
+                                        ),
                                       ),
-                                    ),                                    
+                                      onTap: () => {
+                                        showMaterialModalBottomSheet(
+                                          context: context,
+                                          builder: (context) => AppointmentExpanded(appointment: appointment),
+                                        )
+                                      }, 
+                                    )                                                                       
                                   ],
                                 ),
                               ],
@@ -209,8 +224,35 @@ class AppointmentView extends StatelessWidget {
                         ],
                       ),
                     )
-                  ],
-                ),
+                    ],
+                  ),
+                  onLongPress: () => {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: Colors.white,
+                        title: Text("Update Appointment"),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text("Add Prescription"),
+                            onPressed: (){
+                              Navigator.pop(context);
+                              addPrescription(appointment.id, appointment.patientId);
+                            }
+                          ),
+                          TextButton(
+                            child: Text("Add note"),
+                            onPressed: (){
+                              Navigator.pop(context);
+                              updateAppointment(appointment.id);
+                            }
+                          ),
+                          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+                        ],
+                      )
+                    )
+                  },
+                )
               ),
             ),
           ),
