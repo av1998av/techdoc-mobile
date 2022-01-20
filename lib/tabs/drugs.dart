@@ -195,6 +195,36 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
     });
   }
   
+  showDeleteDialog(drug) async{
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          scrollable: true,
+          title: Text('Delete Drug/Process ' + drug.name),          
+          actions: [
+            TextButton(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+              ),
+              onPressed: () async {               
+                Navigator.pop(context);
+                await deleteDrug(drug.id.toString());
+              },
+              child: const Text('Submit'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              }, 
+              child: const Text('Cancel')
+            )
+          ],
+        );
+      }
+    );
+  }
+  
   addDrug(String name, int cost, String unit) async {
     CustomHttpResponse customHttpResponse;
     setState(() {
@@ -239,6 +269,41 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
         customHttpResponse = await Api.updateDrug(id, name, unit, cost, token);
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){          
+          fetchDrugs();
+        }
+      }
+    });
+  }
+  
+  deleteDrug(String id) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.deleteDrug(id, token);
         setState(() {
           isLoading = false;
         });
@@ -480,7 +545,8 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
           ),
           animationController: widget.animationController!,
           drug: drugs[i],
-          updateDrug : showUpdateDialog
+          updateDrug : showUpdateDialog,
+          deleteDrug : showDeleteDialog
         ),
       );
     }

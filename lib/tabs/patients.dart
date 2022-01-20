@@ -213,7 +213,7 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
               String preferredCommunication = preferredCommuncationController.text;
               int height = int.parse(heightController.text);
               int weight = int.parse(weightController.text);
-              Patient patient = Patient('fakeId',name, dob, bloodGroup, gender, phone, email, allergies, notes, preferredCommunication, height, weight);
+              Patient patient = Patient('fakeId',name, dob, bloodGroup, gender, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
               if (name != ''){
                 Navigator.pop(context);
                 await addPatient(patient);

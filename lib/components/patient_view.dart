@@ -1,8 +1,10 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, unnecessary_new
 
+import 'package:android/components/patient_expanded.dart';
 import 'package:android/models/patient.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -204,16 +206,24 @@ class PatientView extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: <Widget>[
-                                    Text(
-                                      'History',
-                                      style: TextStyle(
-                                        fontFamily: FitnessAppTheme.fontName,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16,
-                                        letterSpacing: -0.2,
-                                        color: Colors.green,
+                                    InkWell(
+                                      child: Text(
+                                        'View',
+                                        style: TextStyle(
+                                          fontFamily: FitnessAppTheme.fontName,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                          letterSpacing: -0.2,
+                                          color: Colors.green,
+                                        ),
                                       ),
-                                    ),                                    
+                                      onTap: () => {
+                                        showMaterialModalBottomSheet(
+                                          context: context,
+                                          builder: (context) => PatientExpanded(patient: patient,),
+                                        )
+                                      }, 
+                                    )     
                                   ],
                                 ),
                               ],

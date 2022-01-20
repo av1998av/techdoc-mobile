@@ -9,7 +9,8 @@ class DrugView extends StatelessWidget {
   final Animation<double>? animation;
   final Drug drug;
   final Function(Drug) updateDrug;
-  const DrugView({Key? key, this.animationController, this.animation, required this.drug, required this.updateDrug})
+  final Function(Drug) deleteDrug;
+  const DrugView({Key? key, this.animationController, this.animation, required this.drug, required this.updateDrug, required this.deleteDrug})
       : super(key: key);
 
   @override
@@ -136,7 +137,7 @@ class DrugView extends StatelessWidget {
                               children: <Widget>[
                                 InkWell(
                                   child: Text(
-                                    'Refill',
+                                    'Update',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontFamily: FitnessAppTheme.fontName,
@@ -149,7 +150,7 @@ class DrugView extends StatelessWidget {
                                   onTap: () async{
                                     await updateDrug(drug);
                                   },
-                                )                               
+                                )
                               ],
                             ),
                           ),
@@ -158,23 +159,22 @@ class DrugView extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: <Widget>[
-                                    Text(
-                                      'Delete',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontFamily: FitnessAppTheme.fontName,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 18,
-                                        letterSpacing: -0.2,
-                                        color: Colors.red,
-                                      ),
-                                    ),                                    
-                                  ],
-                                ),
+                                InkWell(
+                                  child: Text(
+                                    'Delete',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: FitnessAppTheme.fontName,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 18,
+                                      letterSpacing: -0.2,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                  onTap: () async{
+                                    await deleteDrug(drug);
+                                  },
+                                )
                               ],
                             ),
                           ),                          
