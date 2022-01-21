@@ -158,6 +158,64 @@ class Api{
     return customResponse;
   }
   
+  static Future<CustomHttpResponse> deletePatient(String id, String token) async {
+    CustomHttpResponse customResponse;
+    var response = await delete(
+      Uri.parse(baseUrl + "patient/" + id), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization" : token
+      }
+    );
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
+  }
+  
+  static Future<CustomHttpResponse> updatePatient(Patient patient, String token) async {
+    var body = {};
+    if(patient.preferredCommunication == 'email'){
+      body = {
+        "name" : patient.name,
+        "dob" : patient.dob,
+        "bloodGroup" : patient.bloodGroup,
+        "preferredCommunication" : patient.preferredCommunication,
+        "gender" : patient.gender,
+        "email" : patient.email,
+        "allergies" : patient.allergies,
+        "notes" : patient.notes,
+        "height" : patient.height,
+        "weight" : patient.height,
+      };
+    }
+    else if(patient.preferredCommunication == 'phone'){
+      body = {
+        "name" : patient.name,
+        "dob" : patient.dob,
+        "bloodGroup" : patient.bloodGroup,
+        "preferredCommunication" : patient.preferredCommunication,
+        "gender" : patient.gender,
+        "phone" : patient.phone,
+        "allergies" : patient.allergies,
+        "notes" : patient.notes,
+        "height" : patient.height,
+        "weight" : patient.height,
+      };
+    }
+    CustomHttpResponse customResponse;
+    var response = await put(
+      Uri.parse(baseUrl + "patient/" + patient.id), headers : {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization" : token
+      },
+      body: json.encode(body),
+    );
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
+  }
+  
   static Future<CustomHttpResponse> fetchDrugs(String token) async {
     List<Drug> drugs = [];
     CustomHttpResponse customResponse;

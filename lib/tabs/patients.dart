@@ -104,6 +104,180 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
       }
     });
   }
+  
+  updatePatient(Patient patient) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.updatePatient(patient, token);
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){          
+          fetchPatients();
+        }
+      }
+    });
+  }
+
+  showUpdateDialog(Patient patient) async {
+    nameController.text = patient.name;
+    dobController.text = patient.dob;
+    bloodGroupController.text = patient.bloodGroup;
+    genderController.text = patient.gender;
+    phoneController.text = patient.phone ?? '';
+    emailController.text = patient.email ?? '';
+    allergiesController.text = patient.allergies ?? '';
+    notesController.text = patient.notes ?? '';
+    preferredCommuncationController.text = patient.preferredCommunication;
+    heightController.text = patient.height.toString();
+    weightController.text = patient.weight.toString();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          scrollable: true,
+          title: Text('Update Patient ' + patient.name),
+          content: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Form(
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',                
+                  ),
+                ),
+                TextFormField(
+                  controller: dobController,
+                  decoration: const InputDecoration(
+                    labelText: 'D.O.B'
+                  ),
+                ),
+                TextFormField(
+                  controller: bloodGroupController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Blood Group',
+                  ),
+                ),
+                TextFormField(
+                  controller: genderController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Gender',
+                  ),
+                ),
+                TextFormField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Phone',
+                  ),
+                ),
+                TextFormField(
+                  controller: emailController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                  ),
+                ),
+                TextFormField(
+                  controller: allergiesController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Allergies',
+                  ),
+                ),
+                TextFormField(
+                  controller: notesController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes',
+                  ),
+                ),
+                TextFormField(
+                  controller: preferredCommuncationController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Preferred Communication',
+                  ),
+                ),
+                TextFormField(
+                  controller: heightController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Height',
+                  ),
+                ),
+                TextFormField(
+                  controller: weightController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Weight',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            style: ButtonStyle(
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+            ),
+            onPressed: () async { 
+              String name = nameController.text;
+              String dob = dobController.text;
+              String bloodGroup = bloodGroupController.text;
+              String gender = genderController.text;
+              String phone = phoneController.text;
+              String email = emailController.text;
+              String allergies = allergiesController.text;
+              String notes = notesController.text;
+              String preferredCommunication = preferredCommuncationController.text;
+              int height = int.parse(heightController.text);
+              int weight = int.parse(weightController.text);
+              Patient updatedPatient = Patient(patient.id,name, dob, bloodGroup, gender, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
+              if (name != ''){
+                Navigator.pop(context);
+                await updatePatient(updatedPatient);
+              }
+            },
+            child: const Text('Submit'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            }, 
+            child: const Text('Cancel')
+          )
+        ],
+      );
+    });
+  }
+
 
   showAddDialog() async {
     showDialog(
@@ -229,6 +403,71 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
           )
         ],
       );
+    });
+  }
+  
+  showDeleteDialog(patient) async{
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          scrollable: true,
+          title: Text('Delete Patient ' + patient.name),          
+          actions: [
+            TextButton(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+              ),
+              onPressed: () async {               
+                Navigator.pop(context);
+                await deletePatient(patient.id);
+              },
+              child: const Text('Submit'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              }, 
+              child: const Text('Cancel')
+            )
+          ],
+        );
+      }
+    );
+  }
+  
+  deletePatient(String id) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.deletePatient(id, token);
+        setState(() {
+          isLoading = false;
+        });
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(customHttpResponse.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }, 
+                  child: const Text('OK')
+                )
+              ],
+            );
+          }
+        );
+        if(customHttpResponse.status){          
+          fetchPatients();
+        }
+      }
     });
   }
   
@@ -447,6 +686,8 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
           ),
           animationController: widget.animationController!,
           patient: patients[i],
+          deletePatient: showDeleteDialog,
+          updatePatient: showUpdateDialog,
         ),
       );
     }    

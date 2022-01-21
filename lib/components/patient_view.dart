@@ -11,9 +11,11 @@ import 'package:url_launcher/url_launcher.dart';
 class PatientView extends StatelessWidget {
   final AnimationController? animationController;
   final Animation<double>? animation;
+  final Function(Patient) updatePatient;
+  final Function(Patient) deletePatient;
   final Patient patient;
 
-  PatientView({Key? key, this.animationController, this.animation, required this.patient}): super(key: key);
+  PatientView({Key? key, this.animationController, this.animation, required this.patient, required this.deletePatient, required this.updatePatient}): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -158,17 +160,21 @@ class PatientView extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text(
-                                  'Delete',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: FitnessAppTheme.fontName,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    letterSpacing: -0.2,
-                                    color: Colors.red,
+                                InkWell(
+                                  child: Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                      fontFamily: FitnessAppTheme.fontName,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      letterSpacing: -0.2,
+                                      color: Colors.red,
+                                    ),
                                   ),
-                                ),                                
+                                  onTap: () => {
+                                    deletePatient(patient)
+                                  }, 
+                                )
                               ],
                             ),
                           ),
@@ -181,17 +187,21 @@ class PatientView extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: <Widget>[
-                                    Text(
-                                      'Edit',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontFamily: FitnessAppTheme.fontName,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16,
-                                        letterSpacing: -0.2,
-                                        color: Colors.blue,
+                                    InkWell(
+                                      child: Text(
+                                        'Edit',
+                                        style: TextStyle(
+                                          fontFamily: FitnessAppTheme.fontName,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                          letterSpacing: -0.2,
+                                          color: Colors.blue,
+                                        ),
                                       ),
-                                    ),                                    
+                                      onTap: () => {
+                                        updatePatient(patient)
+                                      }, 
+                                    )
                                   ],
                                 ),
                               ],
@@ -223,7 +233,7 @@ class PatientView extends StatelessWidget {
                                           builder: (context) => PatientExpanded(patient: patient,),
                                         )
                                       }, 
-                                    )     
+                                    )
                                   ],
                                 ),
                               ],
