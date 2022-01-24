@@ -7,6 +7,7 @@ import 'package:android/models/patient.dart';
 import 'package:android/providers/api.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class PatientsTab extends StatefulWidget {
   const PatientsTab({Key? key, this.animationController}) : super(key: key);
@@ -82,22 +83,19 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
         setState(() {
           isLoading = false;
         });
-        showDialog(
+        Alert(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(customHttpResponse.message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }, 
-                  child: const Text('OK')
-                )
-              ],
-            );
-          }
-        );
+          style: FitnessAppTheme.alertStyle,
+          buttons: [
+            DialogButton(
+              child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+          title: customHttpResponse.message,
+        ).show();
         if(customHttpResponse.status){
           fetchPatients();
         }
@@ -117,22 +115,19 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
         setState(() {
           isLoading = false;
         });
-        showDialog(
+        Alert(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(customHttpResponse.message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }, 
-                  child: const Text('OK')
-                )
-              ],
-            );
-          }
-        );
+          style: FitnessAppTheme.alertStyle,
+          buttons: [
+            DialogButton(
+              child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+          title: customHttpResponse.message,
+        ).show();
         if(customHttpResponse.status){          
           fetchPatients();
         }
@@ -448,22 +443,19 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
         setState(() {
           isLoading = false;
         });
-        showDialog(
+        Alert(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(customHttpResponse.message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }, 
-                  child: const Text('OK')
-                )
-              ],
-            );
-          }
-        );
+          style: FitnessAppTheme.alertStyle,
+          buttons: [
+            DialogButton(
+              child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+          title: customHttpResponse.message,
+        ).show();
         if(customHttpResponse.status){          
           fetchPatients();
         }
@@ -486,22 +478,19 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
           addAllListData(patients);
         }
         else{
-          showDialog(
+          Alert(
             context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text(customHttpResponse.message),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }, 
-                    child: const Text('OK')
-                  )
-                ],
-              );
-            }
-          );
+            style: FitnessAppTheme.alertStyle,
+            buttons: [
+              DialogButton(
+                child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              )
+            ],
+            title: customHttpResponse.message,
+          ).show();
         }
         setState(() {
           isLoading = false;
@@ -552,6 +541,7 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
           return const SizedBox();
         } else {
           return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
             controller: scrollController,
             padding: EdgeInsets.only(
               top: AppBar().preferredSize.height +

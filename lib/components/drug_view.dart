@@ -76,7 +76,7 @@ class DrugView extends StatelessWidget {
                                     padding: const EdgeInsets.only(
                                         left: 4, bottom: 3),
                                     child: Text(
-                                      drug.cost.toString(),
+                                      '\u{20B9}' + drug.cost.toString(),
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontFamily: FitnessAppTheme.fontName,

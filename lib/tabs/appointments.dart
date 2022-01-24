@@ -15,6 +15,7 @@ import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:intl/intl.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class AppointmentsTab extends StatefulWidget {
   const AppointmentsTab({Key? key, this.animationController}) : super(key: key);
@@ -61,22 +62,19 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
         setState(() {
           isLoading = false;
         });
-        showDialog(
+        Alert(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(customHttpResponse.message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }, 
-                  child: const Text('OK')
-                )
-              ],
-            );
-          }
-        );
+          style: FitnessAppTheme.alertStyle,
+          buttons: [
+            DialogButton(
+              child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+          title: customHttpResponse.message,
+        ).show();
         if(customHttpResponse.status){          
           fetchAllAppointments();
         }
@@ -305,22 +303,19 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
         setState(() {
           isLoading = false;
         });
-        showDialog(
+        Alert(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(customHttpResponse.message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }, 
-                  child: const Text('OK')
-                )
-              ],
-            );
-          }
-        );
+          style: FitnessAppTheme.alertStyle,
+          buttons: [
+            DialogButton(
+              child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+          title: customHttpResponse.message,
+        ).show();
         if(customHttpResponse.status){
           fetchAllAppointments(); 
         }
@@ -341,22 +336,19 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
         setState(() {
           isLoading = false;
         });
-        showDialog(
+        Alert(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(customHttpResponse.message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }, 
-                  child: const Text('OK')
-                )
-              ],
-            );
-          }
-        );
+          style: FitnessAppTheme.alertStyle,
+          buttons: [
+            DialogButton(
+              child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+          title: customHttpResponse.message,
+        ).show();
         if(customHttpResponse.status){
           fetchAllAppointments(); 
         }
@@ -377,22 +369,19 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
         setState(() {
           isLoading = false;
         });
-        showDialog(
+        Alert(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(customHttpResponse.message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }, 
-                  child: const Text('OK')
-                )
-              ],
-            );
-          }
-        );
+          style: FitnessAppTheme.alertStyle,
+          buttons: [
+            DialogButton(
+              child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+          title: customHttpResponse.message,
+        ).show();
         if(customHttpResponse.status){
           fetchAllAppointments(); 
         }
@@ -429,24 +418,19 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
                     setState(() {
                       isLoading = false;
                     });                    
-                    showDialog(
+                    Alert(
                       context: context,
-                      builder: (BuildContext context2) {
-                        return AlertDialog(
-                          title: Text(customHttpResponse.message),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context2);                                
-                                notesController.dispose();
-                                fetchAllAppointments(); 
-                              }, 
-                              child: const Text('OK')
-                            )
-                          ],
-                        );
-                      }
-                    );                    
+                      style: FitnessAppTheme.alertStyle,
+                      buttons: [
+                        DialogButton(
+                          child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        )
+                      ],
+                      title: customHttpResponse.message,
+                    ).show();
                   }
                 });
               }, 
@@ -497,24 +481,19 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
                     setState(() {
                       isLoading = false;
                     });                    
-                    showDialog(
+                    Alert(
                       context: context,
-                      builder: (BuildContext context2) {
-                        return AlertDialog(
-                          title: Text(customHttpResponse.message),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context2);                                
-                                notesController.dispose();
-                                fetchAllAppointments(); 
-                              }, 
-                              child: const Text('OK')
-                            )
-                          ],
-                        );
-                      }
-                    );                    
+                      style: FitnessAppTheme.alertStyle,
+                      buttons: [
+                        DialogButton(
+                          child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        )
+                      ],
+                      title: customHttpResponse.message,
+                    ).show();
                   }
                 });
               }, 
@@ -629,6 +608,7 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
           return const SizedBox();
         } else {
           return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
             controller: scrollController,
             padding: EdgeInsets.only(
               top: AppBar().preferredSize.height +

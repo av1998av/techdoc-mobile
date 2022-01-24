@@ -1,6 +1,7 @@
-// ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names, prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class FitnessAppTheme {
   FitnessAppTheme._();
@@ -88,4 +89,22 @@ class FitnessAppTheme {
     letterSpacing: 0.2,
     color: lightText, // was lightText
   );
+  
+  static AlertStyle alertStyle = AlertStyle(
+    animationType: AnimationType.fromTop,
+    isCloseButton: false,
+    isOverlayTapDismiss: true,
+    descStyle: const TextStyle(fontWeight: FontWeight.bold),
+    animationDuration: Duration(milliseconds: 400),
+    alertBorder: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20.0),
+      side: BorderSide(
+        color: Colors.grey,
+      ),
+    ),
+    titleStyle: const TextStyle(
+      color: Color.fromRGBO(91, 55, 185, 1.0),
+    ),
+  );
+
 }

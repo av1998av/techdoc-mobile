@@ -13,6 +13,7 @@ import 'package:android/themes/themes.dart';
 import 'package:android/components/counter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class BillsTab extends StatefulWidget {
   const BillsTab({Key? key, this.animationController}) : super(key: key);
@@ -150,22 +151,19 @@ class BillsTabState extends State<BillsTab> with TickerProviderStateMixin {
         setState(() {
           isLoading = false;
         });
-        showDialog(
+        Alert(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(customHttpResponse.message),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  }, 
-                  child: const Text('OK')
-                )
-              ],
-            );
-          }
-        );
+          style: FitnessAppTheme.alertStyle,
+          buttons: [
+            DialogButton(
+              child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+          title: customHttpResponse.message,
+        ).show();
         if(customHttpResponse.status){          
           fetchBills();
         }
@@ -364,6 +362,7 @@ class BillsTabState extends State<BillsTab> with TickerProviderStateMixin {
           return const SizedBox();
         } else {
           return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
             controller: scrollController,
             padding: EdgeInsets.only(
               top: AppBar().preferredSize.height +
