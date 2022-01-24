@@ -285,7 +285,7 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
       builder: (BuildContext context) {
         return AlertDialog(
           scrollable: true,
-          title: const Text('Add Drug/Process'),
+          title: const Text('Add Patient'),
           content: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Form(
