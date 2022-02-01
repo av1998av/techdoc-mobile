@@ -234,6 +234,8 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
     super.initState();
   }
   
+  
+  
   Future<void> fetchAllAppointments() async {
     CustomHttpResponse customAppointmentsHttpResponse;
     CustomHttpResponse customPatientsHttpResponse;
@@ -245,11 +247,16 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
         token = token;
-        customAppointmentsHttpResponse = await Api.fetchDateAppointments(token,today);  
-        customPatientsHttpResponse = await Api.fetchPatients(token); 
-        customDrugsHttpResponse = await Api.fetchDrugs(token);     
+        final results = await Future.wait([
+          Api.fetchDateAppointments(token,today),
+          Api.fetchPatients(token),
+          Api.fetchDrugs(token)
+        ]);        
+        customAppointmentsHttpResponse = results[0];  
+        customPatientsHttpResponse = results[1]; 
+        customDrugsHttpResponse = results[2];     
         token = token;
-        if(customPatientsHttpResponse.status && customAppointmentsHttpResponse.status){
+        if(customPatientsHttpResponse.status && customAppointmentsHttpResponse.status && customDrugsHttpResponse.status){
           allAppointments = customAppointmentsHttpResponse.items.cast();
           patients = customPatientsHttpResponse.items.cast();
           drugs = customDrugsHttpResponse.items.cast();
@@ -405,12 +412,12 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
           actions: [
             TextButton(
               onPressed: () {
-                // Navigator.pop(context);
+                Navigator.pop(context);
                 setState(() {
                   isLoading = true;
                 });                
                 Future.delayed(const Duration(seconds: 3), () async {
-                  Navigator.pop(context);
+                  // Navigator.pop(context);
                   var token = await SharePreferenceHelper.getUserToken();
                   if(token != ''){                    
                     customHttpResponse = await Api.updateAppointment(token, id, notesController.text.toString());
@@ -431,6 +438,9 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
                       ],
                       title: customHttpResponse.message,
                     ).show();
+                    if(customHttpResponse.status){
+                      fetchAllAppointments(); 
+                    }
                   }
                 });
               }, 
@@ -494,6 +504,9 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
                       ],
                       title: customHttpResponse.message,
                     ).show();
+                    if(customHttpResponse.status){
+                      fetchAllAppointments(); 
+                    }
                   }
                 });
               }, 

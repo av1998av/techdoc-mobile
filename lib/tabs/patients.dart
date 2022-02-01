@@ -172,14 +172,12 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                 ),
                 TextFormField(
                   controller: bloodGroupController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Blood Group',
                   ),
                 ),
                 TextFormField(
                   controller: genderController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Gender',
                   ),
@@ -193,28 +191,24 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                 ),
                 TextFormField(
                   controller: emailController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                   ),
                 ),
                 TextFormField(
                   controller: allergiesController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Allergies',
                   ),
                 ),
                 TextFormField(
                   controller: notesController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Notes',
                   ),
                 ),
                 TextFormField(
                   controller: preferredCommuncationController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Preferred Communication',
                   ),
@@ -300,14 +294,12 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                 ),
                 TextFormField(
                   controller: bloodGroupController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Blood Group',
                   ),
                 ),
                 TextFormField(
                   controller: genderController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Gender',
                   ),
@@ -321,28 +313,24 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                 ),
                 TextFormField(
                   controller: emailController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Email',
                   ),
                 ),
                 TextFormField(
                   controller: allergiesController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Allergies',
                   ),
                 ),
                 TextFormField(
                   controller: notesController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Notes',
                   ),
                 ),
                 TextFormField(
                   controller: preferredCommuncationController,
-                  keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Preferred Communication',
                   ),

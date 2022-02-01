@@ -149,8 +149,7 @@ class Api{
     });
     var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if(response.statusCode == 200){
-      
-      patients = (json.decode(response.body)['patients'] as List).map((patient) => Patient(patient['id'], patient['name'], patient['dob'], patient['bloodGroup'], patient['gender'], patient['phone'], patient['email'], patient['allergies'], patient['notes'], patient['preferredCommunication'], patient['height'], patient['weight'], (patient['Appointments'] as List).map((appointment) => Appointment(appointment['id'],patient['name'], patient['id'], appointment['status'], DateFormat("yyyy-MM-ddThh:mm:ss.SSS'Z'").parse(appointment['datetime']), appointment?['Prescription']?['fileLink'], appointment['notes'])).toList())).toList();
+      patients = (json.decode(response.body)['patients'] as List).map((patient) => Patient(patient['id'], patient['name'], patient['dob'], patient['bloodGroup'], patient['gender'], patient['phone'],patient['email'], patient['allergies'], patient['notes'], patient['preferredCommunication'], patient['height'], patient['weight'], (patient['Appointments'] as List).map((appointment) => Appointment(appointment['id'],patient['name'], patient['id'], appointment['status'], DateFormat("yyyy-MM-ddThh:mm:ss.SSS'Z'").parse(appointment['datetime']), appointment?['Prescription']?['fileLink'], appointment['notes'])).toList())).toList();
       customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,patients);
     }
     else{

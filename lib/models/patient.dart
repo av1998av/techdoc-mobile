@@ -6,10 +6,10 @@ class Patient {
   final String dob;
   final String bloodGroup;
   final String gender;
-  final String phone;
-  final String email;
-  final String allergies;
-  final String notes;
+  final String? phone;
+  final String? email;
+  final String? allergies;
+  final String? notes;
   final String preferredCommunication;
   final int height;
   final int weight;
