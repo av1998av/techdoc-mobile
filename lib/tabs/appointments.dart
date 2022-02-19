@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:io';
 import 'dart:math';
 
 import 'package:android/components/appointment_view.dart';
@@ -9,12 +10,14 @@ import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/models/appointment.dart';
 import 'package:android/models/custom_http_response.dart';
 import 'package:android/models/drug.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:android/models/patient.dart';
 import 'package:android/providers/api.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:intl/intl.dart';
+import 'package:multi_image_picker2/multi_image_picker2.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class AppointmentsTab extends StatefulWidget {
@@ -29,6 +32,8 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
   List<Appointment> allAppointments = [];
   List<Patient> patients = [];
   List<Drug> drugs = [];
+  List<File> files = [];
+  String filesSelected = 'No files selected';
   bool isLoading = false;
   String token = '';
   DateTime today = DateTime.now();
@@ -58,6 +63,39 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
         customHttpResponse = await Api.addPrescription(patientId, appointmentId, entries, token);
+        token = token;
+        setState(() {
+          isLoading = false;
+        });
+        Alert(
+          context: context,
+          style: FitnessAppTheme.alertStyle,
+          buttons: [
+            DialogButton(
+              child: Text("Ok",style: TextStyle(color: Colors.white, fontSize: 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+          title: customHttpResponse.message,
+        ).show();
+        if(customHttpResponse.status){          
+          fetchAllAppointments();
+        }
+      }
+    });
+  }
+  
+  addFile (int appointmentId, List<File> files) async {
+    CustomHttpResponse customHttpResponse;
+    setState(() {
+      isLoading = true;
+    });
+    Future.delayed(const Duration(seconds: 3), () async {
+      var token = await SharePreferenceHelper.getUserToken();
+      if(token != ''){
+        customHttpResponse = await Api.addFiles(token, appointmentId, files);
         token = token;
         setState(() {
           isLoading = false;
@@ -149,6 +187,59 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
           TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
         ],
       ),
+    );
+  }
+  
+  showAddFilesDialog(int appointmentId) async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setState){
+          return AlertDialog(
+            scrollable: true,
+            backgroundColor: Colors.white,
+            insetPadding: EdgeInsets.all(10),
+            title: Text("Add Files"),
+            content: Column(
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: () async { 
+                    // loadAssets();
+                    FilePickerResult? result = await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowMultiple: true,
+                      allowedExtensions: ['jpg', 'pdf', 'png', 'jpeg'],
+                    );
+                    if (result != null) {
+                      files = result.paths.map((path) => File(path!)).toList();
+                      setState(() {
+                        filesSelected = files.length.toString() + " files selected";
+                      });                  
+                      print(files.length.toString() + " files selected");
+                    }
+                    else {
+                      // User canceled the picker
+                    }
+                  },
+                  child: Text("Pick files"),              
+                ),
+                const SizedBox(height: 20,),
+                Text(filesSelected)
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text("Ok"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  addFile(appointmentId, files);
+                }
+              ),
+              TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+            ],
+          );
+        });
+      }
     );
   }
   
@@ -552,7 +643,7 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
           itemBuilder: (context, Patient patient) {
             return ListTile(
               title: Text(patient.name),
-              subtitle: Text(patient.id)
+              subtitle: Text(patient.email ?? patient.phone ?? '')
             );
           }, 
           onSuggestionSelected: (Patient patient) {
@@ -824,6 +915,7 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
           completeAppointment: completeAppointment,
           updateAppointment: updateAppointment,
           addPrescription: showAddPrescriptionDialog,
+          addFiles: showAddFilesDialog,
         ),
       );
     }

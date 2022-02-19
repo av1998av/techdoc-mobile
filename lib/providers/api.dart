@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print
 
+import 'dart:io';
+import 'package:http_parser/http_parser.dart';
 import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/models/appointment.dart';
 import 'package:android/models/bill.dart';
@@ -13,8 +15,8 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart';
 
 class Api{
-  // static const String baseUrl = 'http://10.0.2.2:3000/';
-  static const String baseUrl = 'https://techdoc-mathan.herokuapp.com/';
+  static const String baseUrl = 'http://10.0.2.2:3000/';
+  // static const String baseUrl = 'https://techdoc-mathan.herokuapp.com/';
   
   static Future<CustomHttpResponse> loginUser(String username, String password) async {
     var body = {
@@ -149,6 +151,7 @@ class Api{
     var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if(response.statusCode == 200){
       patients = (json.decode(response.body)['patients'] as List).map((patient) => Patient(patient['id'], patient['name'], patient['dob'], patient['bloodGroup'], patient['gender'], patient['phone'],patient['email'], patient['allergies'], patient['notes'], patient['preferredCommunication'], patient['height'], patient['weight'], (patient['Appointments'] as List).map((appointment) => Appointment(appointment['id'],patient['name'], patient['id'], appointment['status'], DateFormat("yyyy-MM-ddThh:mm:ss.SSS'Z'").parse(appointment['datetime']), appointment?['Prescription']?['fileLink'], appointment['notes'])).toList())).toList();
+      print(patients);
       customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,patients);
     }
     else{
@@ -328,6 +331,38 @@ class Api{
       "Authorization" : token
     });
     var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
+    return customResponse;
+  }
+  
+  static Future<CustomHttpResponse> addFiles(String token, int id, List<File> files) async {
+    var request = http.MultipartRequest("POST", Uri.parse(baseUrl + "appointment/files/"+id.toString()));
+    for (var file in files) {
+      String fileName = file.path.split("/").last;
+      // var stream = http.ByteStream(DelegatingStream.typed(file.openRead()));
+      // var length = await file.length(); 
+      // var multipartFileSign = http.MultipartFile('file', stream, length, filename: fileName);
+      var multipartFileSign = http.MultipartFile.fromBytes(
+        "file",
+        file.readAsBytesSync(),
+        filename: fileName,
+        contentType: MediaType("image", file.path.split(".").last)
+      );
+      request.files.add(multipartFileSign);
+    }
+    Map<String, String> headers = {
+      "Authorization": token,
+      "Content-Type" : 'multipart/form-data'
+    };
+    request.headers.addAll(headers);
+    CustomHttpResponse customResponse;
+    var res = await request.send();
+    print(res.statusCode);
+    var response = await http.Response.fromStream(res);
+    print(json.decode(response.body));
+    var status = json.decode(response.body)['result'] == 'Success' ? true : false;
+    print(status);
+    print(json.decode(response.body)['message']);
     customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,[]);
     return customResponse;
   }

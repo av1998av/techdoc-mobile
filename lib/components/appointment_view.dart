@@ -14,9 +14,10 @@ class AppointmentView extends StatelessWidget {
   final Function(int) cancelAppointment;
   final Function(int) completeAppointment;
   final Function(int) updateAppointment;
+  final Function(int) addFiles;
   final Function(int, String) addPrescription;
   
-  AppointmentView({Key? key, this.animationController, this.animation, required this.appointment, required this.cancelAppointment, required this.completeAppointment, required this.updateAppointment, required this.addPrescription})
+  AppointmentView({Key? key, this.animationController, this.animation, required this.appointment, required this.cancelAppointment, required this.completeAppointment, required this.updateAppointment, required this.addPrescription, required this.addFiles})
       : super(key: key);
       
   getIcon(){
@@ -245,6 +246,13 @@ class AppointmentView extends StatelessWidget {
                             onPressed: (){
                               Navigator.pop(context);
                               updateAppointment(appointment.id);
+                            }
+                          ),
+                          TextButton(
+                            child: Text("Add files"),
+                            onPressed: (){
+                              Navigator.pop(context);
+                              addFiles(appointment.id);
                             }
                           ),
                           TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
