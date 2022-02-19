@@ -38,6 +38,7 @@ class BillsTabState extends State<BillsTab> with TickerProviderStateMixin {
   double topBarOpacity = 0.0;
   
   final TextEditingController patientController = TextEditingController();
+  final TextEditingController paymentMethodController = TextEditingController();
   final List<TextEditingController> drugControllers = List.generate(10, (i) => TextEditingController());
   final List<TextEditingController> priceControllers = List.generate(10, (i) => TextEditingController());
   final List<TextEditingController> quantityControllers = List.generate(10, (i) => TextEditingController());
@@ -49,6 +50,10 @@ class BillsTabState extends State<BillsTab> with TickerProviderStateMixin {
   
   List<Drug> getDrugSuggestions(pattern) {
     return drugs.where((drug) => drug.name.toLowerCase().contains(pattern)).toList();
+  }
+  
+  List<String> getPaymentMethodSuggestions(pattern) {
+    return ['Cash', 'UPI', 'Cheque', 'Insurance', 'Credit Card'].where((item) => item.toLowerCase().contains(pattern)).toList();
   }
 
   @override
@@ -233,6 +238,27 @@ class BillsTabState extends State<BillsTab> with TickerProviderStateMixin {
                       ]
                     );
                   }),
+                  const SizedBox(height: 10,),
+                  TypeAheadField(
+                    textFieldConfiguration: TextFieldConfiguration(
+                      decoration: InputDecoration(
+                        labelText: 'Payment Method',
+                        border: OutlineInputBorder()
+                      ),
+                      controller: paymentMethodController
+                    ),
+                    suggestionsCallback: (pattern) async {
+                      return getPaymentMethodSuggestions(pattern);
+                    },
+                    itemBuilder: (context, String item) {
+                      return ListTile(
+                        title: Text(item),                        
+                      );
+                    }, 
+                    onSuggestionSelected: (String item) {
+                      paymentMethodController.text = item;
+                    },
+                  ),
                 ],
               )
             )
@@ -255,7 +281,7 @@ class BillsTabState extends State<BillsTab> with TickerProviderStateMixin {
                   "drugId" : drugControllers[item].text
                 });
               }
-              addBill(Bill('',patientController.text,total,'CASH',''),entries);
+              addBill(Bill('',patientController.text,total, paymentMethodController.text,''),entries);
             }
           ),
           TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
