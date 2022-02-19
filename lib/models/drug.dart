@@ -3,7 +3,8 @@ class Drug {
   final int id;
   final int cost;
   final String unit;
+  final int quantity;
 
-  Drug(this.id, this.name, this.cost, this.unit);
+  Drug(this.id, this.name, this.cost, this.unit, this.quantity);
   
 }

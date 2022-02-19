@@ -200,7 +200,7 @@ class BillsTabState extends State<BillsTab> with TickerProviderStateMixin {
                     itemBuilder: (context, Patient patient) {
                       return ListTile(
                         title: Text(patient.name),
-                        subtitle: Text(patient.id)
+                        subtitle: Text(patient.email ?? patient.phone ?? '')
                       );
                     }, 
                     onSuggestionSelected: (Patient patient) {

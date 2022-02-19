@@ -23,9 +23,11 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
   final nameController = TextEditingController();
   final costController = TextEditingController();
   final unitController = TextEditingController();
+  final quantityController = TextEditingController();
   final nameEditController = TextEditingController();
   final costEditController = TextEditingController();
   final unitEditController = TextEditingController();
+  final quantityEditController = TextEditingController();
 
   List<Drug> drugs = [];
   bool isLoading = false;
@@ -100,6 +102,13 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
                     labelText: 'Price',
                   ),
                 ),
+                TextFormField(
+                  controller: quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Quantity',
+                  ),
+                ),
               ],
             ),
           ),
@@ -113,9 +122,10 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
               String name = nameController.text;
               String unit = unitController.text;
               int cost = int.parse(costController.text);
+              int quantity = int.parse(quantityController.text);
               if (name != ''){
                 Navigator.pop(context);
-                await addDrug(name, cost, unit);
+                await addDrug(name, cost, unit, quantity);
               }
             },
             child: const Text('Submit'),
@@ -135,6 +145,7 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
     nameEditController.text = drug.name;
     costEditController.text = drug.cost.toString();
     unitEditController.text = drug.unit;
+    quantityEditController.text = drug.quantity.toString();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -165,6 +176,13 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
                     labelText: 'Price',
                   ),
                 ),
+                TextFormField(
+                  controller: quantityEditController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Price',
+                  ),
+                ),
               ],
             ),
           ),
@@ -178,9 +196,10 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
               String name = nameEditController.text;
               String unit = unitEditController.text;
               int cost = int.parse(costEditController.text);
+              int quantity = int.parse(quantityEditController.text);
               if (name != ''){
                 Navigator.pop(context);
-                await updateDrug(drug.id.toString(), name, cost, unit);
+                await updateDrug(drug.id.toString(), name, cost, unit, quantity);
               }
             },
             child: const Text('Submit'),
@@ -226,7 +245,7 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
     );
   }
   
-  addDrug(String name, int cost, String unit) async {
+  addDrug(String name, int cost, String unit, int quantity) async {
     CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
@@ -234,7 +253,7 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        customHttpResponse = await Api.addDrug(name, unit, cost, token);
+        customHttpResponse = await Api.addDrug(name, unit, cost, quantity, token);
         setState(() {
           isLoading = false;
         });
@@ -258,7 +277,7 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
     });
   }
   
-  updateDrug(String id, String name, int cost, String unit) async {
+  updateDrug(String id, String name, int cost, String unit, int quantity) async {
     CustomHttpResponse customHttpResponse;
     setState(() {
       isLoading = true;
@@ -266,7 +285,7 @@ class DrugsTabState extends State<DrugsTab> with TickerProviderStateMixin {
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
-        customHttpResponse = await Api.updateDrug(id, name, unit, cost, token);
+        customHttpResponse = await Api.updateDrug(id, name, unit, cost, quantity, token);
         setState(() {
           isLoading = false;
         });

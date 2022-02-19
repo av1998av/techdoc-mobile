@@ -37,7 +37,7 @@ class AppointmentExpanded extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.5,
+      height: MediaQuery.of(context).size.height * 0.9,
       color: getColor(),
       child: Column(
         children: <Widget>[
@@ -119,16 +119,63 @@ class AppointmentExpanded extends StatelessWidget {
               ),
             ),
           ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: const <Widget>[
+              Padding(
+                padding: EdgeInsets.only(left: 25, right: 25, top: 8, bottom: 15),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Text('Prescription', 
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 25,
+                    )
+                  )
+                ),
+              ),
+            ],
+          ),
           Padding(
             padding: const EdgeInsets.all(20),
-            child: getDownloadButton()
+            child: getPrescriptionDownloadButton()
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 20),
+            child: Container(
+              height: 2,
+              decoration: BoxDecoration(
+                color: FitnessAppTheme.background,
+                borderRadius: BorderRadius.all(Radius.circular(4.0)),
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: const <Widget>[
+              Padding(
+                padding: EdgeInsets.only(left: 25, right: 25, top: 8, bottom: 15),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Text('Files', 
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 25,
+                    )
+                  )
+                ),
+              ),
+            ],
+          ),
+          Column(
+            children: getFileDownloadButtons(),
           )
         ],
       ),
     );
   }
   
-  getDownloadButton(){
+  getPrescriptionDownloadButton(){
     if(appointment.prescriptionFileLink != null){
       return TextButton(
         style: ButtonStyle(
@@ -147,6 +194,29 @@ class AppointmentExpanded extends StatelessWidget {
     else{
       return Text('Long press Appointment to add prescription');
     }
+  }
+  
+  getFileDownloadButtons(){
+    final children = <Widget>[];
+    for (var i=0; i< appointment.files.length; i++){
+      var fileName = appointment.files[i].toString().split('/').last.split('?').first;
+      children.add(
+        TextButton(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(FitnessAppTheme.background),                
+          ),
+          onPressed: (){
+            openBrowser(appointment.files[i]);
+          }, 
+          child: Text(fileName,
+            style: TextStyle(
+              color: Colors.red[400]
+            ),
+          )
+        )
+      );
+    }
+    return children;
   }
   
   Future<void> openBrowser(String url) async {

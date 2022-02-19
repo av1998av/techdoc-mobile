@@ -659,7 +659,7 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
                 return;
               }
               else{
-                var appointment = Appointment(0,'',eventController.text,'',today,'','');
+                var appointment = Appointment(0,'',eventController.text,'',today,'','',[]);
                 Navigator.pop(context);
                 addAppointment(appointment);              
               }
