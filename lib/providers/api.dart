@@ -112,7 +112,7 @@ class Api{
         "allergies" : patient.allergies,
         "notes" : patient.notes,
         "height" : patient.height,
-        "weight" : patient.height,
+        "weight" : patient.weight,
       };
     }
     else if(patient.preferredCommunication == 'phone'){

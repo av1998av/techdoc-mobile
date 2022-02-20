@@ -5,6 +5,7 @@ import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/models/custom_http_response.dart';
 import 'package:android/models/patient.dart';
 import 'package:android/providers/api.dart';
+import 'package:intl/intl.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -25,7 +26,8 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
   bool isLoading = false;
   final nameController = TextEditingController();
   final dobController = TextEditingController();
-  final bloodGroupController = TextEditingController();
+  String bloodGroup = 'Blood Group';
+  String gender = 'Gender';
   final genderController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
@@ -138,8 +140,8 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
   showUpdateDialog(Patient patient) async {
     nameController.text = patient.name;
     dobController.text = patient.dob;
-    bloodGroupController.text = patient.bloodGroup;
-    genderController.text = patient.gender;
+    bloodGroup = patient.bloodGroup;
+    gender = patient.gender;
     phoneController.text = patient.phone ?? '';
     emailController.text = patient.email ?? '';
     allergiesController.text = patient.allergies ?? '';
@@ -169,18 +171,63 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                   decoration: const InputDecoration(
                     labelText: 'D.O.B'
                   ),
+                  onTap: () async {
+                    DateTime pickedDate = (await showDatePicker(
+                      context: context, 
+                      firstDate: DateTime(1900),
+                      initialDate: DateTime.now(),
+                      lastDate: DateTime(2100),
+                    ))!;
+                    if(pickedDate != null ){
+                      String dob = DateFormat('dd/MM/yyyy').format(pickedDate);
+                      dobController.text = dob;
+                    }
+                  },
+                ),                
+                SizedBox(
+                  height: 10,
                 ),
-                TextFormField(
-                  controller: bloodGroupController,
-                  decoration: const InputDecoration(
-                    labelText: 'Blood Group',
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: bloodGroup,
+                  hint: Text("Blood Group"),
+                  style: const TextStyle(color: Colors.black54,fontSize: 17),
+                  underline: Container(                    
+                    height: 1,
+                    color: Colors.black54,
                   ),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      bloodGroup = newValue!;
+                    });                    
+                  },
+                  items: <String>['Blood Group','O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
                 ),
-                TextFormField(
-                  controller: genderController,
-                  decoration: const InputDecoration(
-                    labelText: 'Gender',
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: gender,
+                  hint: Text("Gender"),
+                  style: const TextStyle(color: Colors.black54,fontSize: 17),
+                  underline: Container(                    
+                    height: 1,
+                    color: Colors.black54,
                   ),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      gender = newValue!;
+                    });                    
+                  },
+                  items: <String>['Gender','male', 'female', 'others'].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
                 ),
                 TextFormField(
                   controller: phoneController,
@@ -205,12 +252,6 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                   controller: notesController,
                   decoration: const InputDecoration(
                     labelText: 'Notes',
-                  ),
-                ),
-                TextFormField(
-                  controller: preferredCommuncationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Preferred Communication',
                   ),
                 ),
                 TextFormField(
@@ -239,7 +280,7 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
             onPressed: () async { 
               String name = nameController.text;
               String dob = dobController.text;
-              String bloodGroup = bloodGroupController.text;
+              // String bloodGroup = bloodGroupController.text;
               String gender = genderController.text;
               String phone = phoneController.text;
               String email = emailController.text;
@@ -248,11 +289,11 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
               String preferredCommunication = preferredCommuncationController.text;
               int height = int.parse(heightController.text);
               int weight = int.parse(weightController.text);
-              Patient updatedPatient = Patient(patient.id,name, dob, bloodGroup, gender, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
-              if (name != ''){
-                Navigator.pop(context);
-                await updatePatient(updatedPatient);
-              }
+              // Patient updatedPatient = Patient(patient.id,name, dob, bloodGroup, gender, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
+              // if (name != ''){
+              //   Navigator.pop(context);
+              //   await updatePatient(updatedPatient);
+              // }
             },
             child: const Text('Submit'),
           ),
@@ -269,124 +310,166 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
 
 
   showAddDialog() async {
-    showDialog(
+    await showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          scrollable: true,
-          title: const Text('Add Patient'),
-          content: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Form(
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',                
-                  ),
+      builder: (context) {
+        return StatefulBuilder(builder: ((context, setState) {
+          return AlertDialog(
+            scrollable: true,
+            title: const Text('Add Patient'),
+            content: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Form(
+                child: Column(
+                  children: <Widget>[
+                    TextFormField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',                
+                      ),
+                    ),
+                    TextFormField(
+                      controller: dobController,
+                      decoration: const InputDecoration(
+                        labelText: 'D.O.B'
+                      ),
+                      onTap: () async {
+                        DateTime pickedDate = (await showDatePicker(
+                          context: context, 
+                          firstDate: DateTime(1900),
+                          initialDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                        ))!;
+                        if(pickedDate != null ){
+                          String dob = DateFormat('dd/MM/yyyy').format(pickedDate);
+                          dobController.text = dob;
+                        }
+                      },
+                    ),                
+                    SizedBox(
+                      height: 10,
+                    ),
+                    DropdownButton<String>(
+                      isExpanded: true,
+                      value: bloodGroup,
+                      hint: Text("Blood Group"),
+                      style: const TextStyle(color: Colors.black54,fontSize: 17),
+                      underline: Container(                    
+                        height: 1,
+                        color: Colors.black54,
+                      ),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          bloodGroup = newValue!;
+                        });                    
+                      },
+                      items: <String>['Blood Group','O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    DropdownButton<String>(
+                      isExpanded: true,
+                      value: gender,
+                      hint: Text("Blood Group"),
+                      style: const TextStyle(color: Colors.black54,fontSize: 17),
+                      underline: Container(                    
+                        height: 1,
+                        color: Colors.black54,
+                      ),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          gender = newValue!;
+                        });                    
+                      },
+                      items: <String>['Gender','male', 'female', 'others'].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    TextFormField(
+                      controller: phoneController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: allergiesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Allergies',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: notesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Notes',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: heightController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Height',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: weightController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Weight',
+                      ),
+                    ),
+                  ],
                 ),
-                TextFormField(
-                  controller: dobController,
-                  decoration: const InputDecoration(
-                    labelText: 'D.O.B'
-                  ),
-                ),
-                TextFormField(
-                  controller: bloodGroupController,
-                  decoration: const InputDecoration(
-                    labelText: 'Blood Group',
-                  ),
-                ),
-                TextFormField(
-                  controller: genderController,
-                  decoration: const InputDecoration(
-                    labelText: 'Gender',
-                  ),
-                ),
-                TextFormField(
-                  controller: phoneController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone',
-                  ),
-                ),
-                TextFormField(
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                  ),
-                ),
-                TextFormField(
-                  controller: allergiesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Allergies',
-                  ),
-                ),
-                TextFormField(
-                  controller: notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes',
-                  ),
-                ),
-                TextFormField(
-                  controller: preferredCommuncationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Preferred Communication',
-                  ),
-                ),
-                TextFormField(
-                  controller: heightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Height',
-                  ),
-                ),
-                TextFormField(
-                  controller: weightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Weight',
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-            ),
-            onPressed: () async { 
-              String name = nameController.text;
-              String dob = dobController.text;
-              String bloodGroup = bloodGroupController.text;
-              String gender = genderController.text;
-              String phone = phoneController.text;
-              String email = emailController.text;
-              String allergies = allergiesController.text;
-              String notes = notesController.text;
-              String preferredCommunication = preferredCommuncationController.text;
-              int height = int.parse(heightController.text);
-              int weight = int.parse(weightController.text);
-              Patient patient = Patient('fakeId',name, dob, bloodGroup, gender, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
-              if (name != ''){
-                Navigator.pop(context);
-                await addPatient(patient);
-              }
-            },
-            child: const Text('Submit'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            }, 
-            child: const Text('Cancel')
-          )
-        ],
-      );
-    });
+            actions: [
+              TextButton(
+                style: ButtonStyle(
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                ),
+                onPressed: () async { 
+                  String name = nameController.text;
+                  String dob = dobController.text;
+                  String bloodGroupSelected = bloodGroup;
+                  String genderSelected = gender;
+                  String phone = phoneController.text;
+                  String email = emailController.text;
+                  String allergies = allergiesController.text;
+                  String notes = notesController.text;
+                  String preferredCommunication = phone != '' ? 'phone' : 'email';
+                  int height = int.parse(heightController.text);
+                  int weight = int.parse(weightController.text);
+                  Patient patient = Patient('fakeId',name, dob, bloodGroupSelected, genderSelected, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
+                  if (name != ''){
+                    Navigator.pop(context);
+                    await addPatient(patient);
+                  }
+                },
+                child: const Text('Submit'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                }, 
+                child: const Text('Cancel')
+              )
+            ],
+          );
+        }));
+      }
+    );
   }
   
   showDeleteDialog(patient) async{
