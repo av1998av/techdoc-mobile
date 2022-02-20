@@ -631,52 +631,61 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
       builder: (context) {
         return StatefulBuilder(builder: ((context, setState) {
           return AlertDialog(
+            scrollable: true,
             backgroundColor: Colors.white,
             title: Text("Add Appointment"),
-            content: Column(
-              children: <Widget>[
-                TypeAheadField(
-                  textFieldConfiguration: TextFieldConfiguration(
-                    decoration: InputDecoration(
-                      labelText: 'Patient',
-                      border: OutlineInputBorder()
+            content:Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Form(
+                child: Column(
+                  children: <Widget>[
+                    TypeAheadField(
+                      textFieldConfiguration: TextFieldConfiguration(
+                        decoration: InputDecoration(
+                          labelText: 'Patient',
+                          border: OutlineInputBorder()
+                        ),
+                        controller: eventController
+                      ),
+                      suggestionsCallback: (pattern) async {
+                        return getSuggestions(pattern);
+                      },
+                      itemBuilder: (context, Patient patient) {
+                        return ListTile(
+                          title: Text(patient.name),
+                          subtitle: Text(patient.email ?? patient.phone ?? '')
+                        );
+                      }, 
+                      onSuggestionSelected: (Patient patient) {
+                        eventController.text = patient.id;
+                      },
                     ),
-                    controller: eventController
-                  ),
-                  suggestionsCallback: (pattern) async {
-                    return getSuggestions(pattern);
-                  },
-                  itemBuilder: (context, Patient patient) {
-                    return ListTile(
-                      title: Text(patient.name),
-                      subtitle: Text(patient.email ?? patient.phone ?? '')
-                    );
-                  }, 
-                  onSuggestionSelected: (Patient patient) {
-                    eventController.text = patient.id;
-                  },
+                    SizedBox(
+                      height: 10,
+                    ),
+                    TextFormField(
+                      controller: timeController,
+                      decoration: const InputDecoration(
+                        labelText: 'Time'
+                      ),
+                      onTap: () async {
+                        TimeOfDay pickedTime = (await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay(hour: 9, minute: 00),
+                          initialEntryMode: TimePickerEntryMode.input,
+                        ))!;
+                        if(pickedTime != null){
+                          String time = pickedTime.format(context);
+                          setState(() {
+                            now = pickedTime;
+                          });
+                          timeController.text = time;
+                        }
+                      },
+                    ),
+                  ],
                 ),
-                TextFormField(
-                  controller: timeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Time'
-                  ),
-                  onTap: () async {
-                    TimeOfDay pickedTime = (await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay(hour: 9, minute: 00),
-                      initialEntryMode: TimePickerEntryMode.input,
-                    ))!;
-                    if(pickedTime != null){
-                      String time = pickedTime.format(context);
-                      setState(() {
-                        now = pickedTime;
-                      });
-                      timeController.text = time;
-                    }
-                  },
-                ),
-              ],
+              ),
             ),
             actions: <Widget>[
               TextButton(
