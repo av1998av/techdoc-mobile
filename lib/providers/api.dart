@@ -259,13 +259,13 @@ class Api{
   static Future<CustomHttpResponse> fetchDateAppointments(String token, DateTime date) async {
     List<Appointment> appointments = [];
     CustomHttpResponse customResponse;
-    var url = baseUrl + "appointment?" + "date=" + DateFormat('yyyy-MM-dd').format(date) + "T00:00:00";
+    var url = baseUrl + "appointment?" + "start=" + DateFormat('yyyy-MM-dd').format(date) + "T00:00:00&end=" + DateFormat('yyyy-MM-dd').format(date) + "T23:59:59";
     var response = await http.get(Uri.parse(url), headers : {
       "Authorization" : token
     });
     var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if (response.statusCode == 200){
-      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], date, appointment['Prescription']?['fileLink'], appointment['notes'], appointment['files'].toString().split(','))).toList();
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], DateFormat('yyyy-MM-ddThh:mm:ss.000Z').parse(appointment['datetime']), appointment['Prescription']?['fileLink'], appointment['notes'], appointment['files'] != null ? appointment['files'].toString().split(',') : [])).toList();
       customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,appointments);
     }
     else{
@@ -299,9 +299,12 @@ class Api{
       "date" : {
         "day" :  appointment.date.day,
         "month" : appointment.date.month,
-        "year" : appointment.date.year
+        "year" : appointment.date.year,
+        "hours" : appointment.date.hour,
+        "minutes" : appointment.date.minute
       }
     };
+    print(body);
     var response = await post(
       Uri.parse(baseUrl + "appointment"), headers : {
         "Accept": "application/json",

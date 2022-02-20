@@ -216,7 +216,7 @@ class AppointmentExpanded extends StatelessWidget {
         )
       );
     }
-    return children;
+    return children.isNotEmpty ? children : [Text('Long press Appointment to add files')];
   }
   
   Future<void> openBrowser(String url) async {

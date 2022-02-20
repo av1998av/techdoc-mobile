@@ -37,7 +37,9 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
   bool isLoading = false;
   String token = '';
   DateTime today = DateTime.now();
+  TimeOfDay now = TimeOfDay.now();
   final numberNotif = ValueNotifier<int>(0);
+  final TextEditingController timeController = TextEditingController();
   final TextEditingController eventController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
   final TextEditingController patientController = TextEditingController();
@@ -626,48 +628,77 @@ class AppointmentsTabState extends State<AppointmentsTab> with TickerProviderSta
   showAddDialog() async {
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: Text("Add Appointment"),
-        content: TypeAheadField(
-          textFieldConfiguration: TextFieldConfiguration(
-            decoration: InputDecoration(
-              labelText: 'Patient',
-              border: OutlineInputBorder()
+      builder: (context) {
+        return StatefulBuilder(builder: ((context, setState) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            title: Text("Add Appointment"),
+            content: Column(
+              children: <Widget>[
+                TypeAheadField(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    decoration: InputDecoration(
+                      labelText: 'Patient',
+                      border: OutlineInputBorder()
+                    ),
+                    controller: eventController
+                  ),
+                  suggestionsCallback: (pattern) async {
+                    return getSuggestions(pattern);
+                  },
+                  itemBuilder: (context, Patient patient) {
+                    return ListTile(
+                      title: Text(patient.name),
+                      subtitle: Text(patient.email ?? patient.phone ?? '')
+                    );
+                  }, 
+                  onSuggestionSelected: (Patient patient) {
+                    eventController.text = patient.id;
+                  },
+                ),
+                TextFormField(
+                  controller: timeController,
+                  decoration: const InputDecoration(
+                    labelText: 'Time'
+                  ),
+                  onTap: () async {
+                    TimeOfDay pickedTime = (await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay(hour: 9, minute: 00),
+                      initialEntryMode: TimePickerEntryMode.input,
+                    ))!;
+                    if(pickedTime != null){
+                      String time = pickedTime.format(context);
+                      setState(() {
+                        now = pickedTime;
+                      });
+                      timeController.text = time;
+                    }
+                  },
+                ),
+              ],
             ),
-            controller: eventController
-          ),
-          suggestionsCallback: (pattern) async {
-            return getSuggestions(pattern);
-          },
-          itemBuilder: (context, Patient patient) {
-            return ListTile(
-              title: Text(patient.name),
-              subtitle: Text(patient.email ?? patient.phone ?? '')
-            );
-          }, 
-          onSuggestionSelected: (Patient patient) {
-            eventController.text = patient.id;
-          },
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text("Ok"),
-            onPressed: (){
-              if(eventController.text.isEmpty){
-                Navigator.pop(context);
-                return;
-              }
-              else{
-                var appointment = Appointment(0,'',eventController.text,'',today,'','',[]);
-                Navigator.pop(context);
-                addAppointment(appointment);              
-              }
-            }
-          ),
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
-        ],
-      )
+            actions: <Widget>[
+              TextButton(
+                child: Text("Ok"),
+                onPressed: (){
+                  if(eventController.text.isEmpty){
+                    Navigator.pop(context);
+                    return;
+                  }
+                  else{
+                    var appointment = Appointment(0,'',eventController.text,'',DateTime(today.year,today.month, today.day, now.hour, now.minute),'','',[]);
+                    Navigator.pop(context);
+                    addAppointment(appointment);              
+                  }
+                }
+              ),
+              TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
+            ],
+          );
+        }));
+      }
+      
     );
   }
 

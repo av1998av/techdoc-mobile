@@ -280,20 +280,20 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
             onPressed: () async { 
               String name = nameController.text;
               String dob = dobController.text;
-              // String bloodGroup = bloodGroupController.text;
-              String gender = genderController.text;
+              String bloodGroupSelected = bloodGroup;
+              String genderSelected = gender;
               String phone = phoneController.text;
               String email = emailController.text;
               String allergies = allergiesController.text;
               String notes = notesController.text;
-              String preferredCommunication = preferredCommuncationController.text;
+              String preferredCommunication = patient.preferredCommunication;
               int height = int.parse(heightController.text);
               int weight = int.parse(weightController.text);
-              // Patient updatedPatient = Patient(patient.id,name, dob, bloodGroup, gender, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
-              // if (name != ''){
-              //   Navigator.pop(context);
-              //   await updatePatient(updatedPatient);
-              // }
+              Patient updatedPatient = Patient(patient.id,name, dob, bloodGroupSelected, genderSelected, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
+              if (name != ''){
+                Navigator.pop(context);
+                await updatePatient(updatedPatient);
+              }
             },
             child: const Text('Submit'),
           ),
