@@ -9,8 +9,10 @@ class Appointment {
   final String? prescriptionFileLink;
   final String? notes;
   final List<String> files;
+  final String contact;
+  final String prefCommunication;
 
-  const Appointment(this.id, this.patientName, this.patientId, this.status, this.date, this.prescriptionFileLink,this.notes,this.files);
+  const Appointment(this.id, this.patientName, this.patientId, this.status, this.date, this.prescriptionFileLink,this.notes,this.files,this.contact,this.prefCommunication);
   
   @override
   String toString() {

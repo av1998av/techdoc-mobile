@@ -5,6 +5,8 @@ import 'package:android/themes/themes.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'appointment_expanded.dart';
 
@@ -225,6 +227,80 @@ class AppointmentView extends StatelessWidget {
                                 ),
                               ],
                             ),
+                          ),
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: <Widget>[
+                                    InkWell(
+                                      child: Text(
+                                        'Contact',
+                                        style: TextStyle(
+                                          fontFamily: FitnessAppTheme.fontName,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                          letterSpacing: -0.2,
+                                          color: Color.fromARGB(255, 190, 10, 214),
+                                        ),
+                                      ),
+                                      onTap: () async {
+                                        if(appointment.prefCommunication == 'phone'){
+                                          var url = 'tel:+91'+appointment.contact.toString();
+                                          if (await canLaunch(url)) {
+                                            await launch(url);
+                                          } 
+                                          else {
+                                            Alert(
+                                              context: context,
+                                              style: alertStyle,
+                                              title: "Could not open mobile",
+                                              buttons: [
+                                                DialogButton(
+                                                  child: Text(
+                                                    "Close",
+                                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                                  ),
+                                                  onPressed: () => Navigator.pop(context),
+                                                  color: Color.fromRGBO(0, 179, 134, 1.0),
+                                                ),
+                                              ]
+                                            ).show();
+                                          } 
+                                        }
+                                        else if(appointment.prefCommunication == 'email'){
+                                          var url = 'mailto:'+appointment.contact.toString();
+                                          if (await canLaunch(url)) {
+                                            await launch(url);
+                                          } 
+                                          else {
+                                            Alert(
+                                              context: context,
+                                              style: alertStyle,
+                                              title: "Could not open mail",
+                                              buttons: [
+                                                DialogButton(
+                                                  child: Text(
+                                                    "Close",
+                                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                                  ),
+                                                  onPressed: () => Navigator.pop(context),
+                                                  color: Color.fromRGBO(0, 179, 134, 1.0),
+                                                ),
+                                              ]
+                                            ).show();
+                                          } 
+                                        }
+                                      }, 
+                                    )                                                                       
+                                  ],
+                                ),
+                              ],
+                            ),
                           )
                         ],
                       ),
@@ -272,4 +348,21 @@ class AppointmentView extends StatelessWidget {
       },
     );
   }
+  
+  var alertStyle = AlertStyle(
+    animationType: AnimationType.fromTop,
+    isCloseButton: false,
+    isOverlayTapDismiss: true,
+    descStyle: const TextStyle(fontWeight: FontWeight.bold),
+    animationDuration: Duration(milliseconds: 400),
+    alertBorder: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20.0),
+      side: BorderSide(
+        color: Colors.grey,
+      ),
+    ),
+    titleStyle: const TextStyle(
+      color: Color.fromRGBO(91, 55, 185, 1.0),
+    ),
+  );
 }
