@@ -5,6 +5,7 @@ import 'package:android/helpers/shared_pref_helper.dart';
 import 'package:android/models/custom_http_response.dart';
 import 'package:android/models/patient.dart';
 import 'package:android/providers/api.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:intl/intl.dart';
 import 'package:android/themes/themes.dart';
 import 'package:flutter/material.dart';
@@ -20,8 +21,8 @@ class PatientsTab extends StatefulWidget {
 
 class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin {
   Animation<double>? topBarAnimation;
-  
-  List<Patient> patients = [];
+  final patientNameController = TextEditingController();
+  List<Patient> globalPatients = [];
   String token = '';
   bool isLoading = false;
   final nameController = TextEditingController();
@@ -71,6 +72,10 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
       }
     });
     super.initState();
+  }
+  
+  List<Patient> getPatientSuggestions(pattern) {
+    return globalPatients.where((patient) => patient.name.toLowerCase().contains(pattern)).toList();
   }
   
   addPatient(Patient patient){
@@ -539,14 +544,15 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
     setState(() {
       isLoading = true;
     });
+    patientNameController.text = '';
     Future.delayed(const Duration(seconds: 3), () async {
       var token = await SharePreferenceHelper.getUserToken();
       if(token != ''){
         customHttpResponse = await Api.fetchPatients(token);
         token = token;
         if(customHttpResponse.status){
-          patients = customHttpResponse.items.cast();
-          addAllListData(patients);
+          globalPatients = customHttpResponse.items.cast();
+          addAllListData(globalPatients);
         }
         else{
           Alert(
@@ -734,8 +740,60 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
   }
   
   void addAllListData(List<Patient> patients) {
+    
     listViews.clear();
-
+    
+    listViews.add(Padding(
+      padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 18),
+      child: Container(
+        decoration: BoxDecoration(color: Colors.purple[50],
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(8.0),
+            bottomLeft: Radius.circular(8.0),
+            bottomRight: Radius.circular(8.0),
+            topRight: Radius.circular(20.0)),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: FitnessAppTheme.grey.withOpacity(0.2),
+              offset: Offset(1.1, 1.1),
+              blurRadius: 10.0),
+          ]
+        ),
+        child: Padding(
+            padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
+            child: TypeAheadField(
+            textFieldConfiguration: TextFieldConfiguration(
+              decoration: InputDecoration(
+                suffixIcon: IconButton(
+                  onPressed: fetchPatients,
+                  icon: Icon(Icons.clear),
+                ),
+                labelText: 'Patient',
+                border: OutlineInputBorder()
+              ),
+              controller: patientNameController
+            ),
+            suggestionsCallback: (pattern) async {
+              return getPatientSuggestions(pattern);
+            },
+            itemBuilder: (context, Patient patient) {
+              return ListTile(
+                title: Text(patient.name),
+                subtitle: Text(patient.email ?? patient.phone ?? '')
+              );
+            }, 
+            onSuggestionSelected: (Patient patient) {
+              patientNameController.text = patient.id;
+              setState(() {
+                List<Patient> patientsFiltered = globalPatients.where((patientItem) => patientItem.id == patient.id).toList();
+                addAllListData(patientsFiltered);
+              });              
+            },
+          )
+        )
+      )
+    ));
+    
     for(int i=0;i<patients.length;i++){
       listViews.add(
         PatientView(

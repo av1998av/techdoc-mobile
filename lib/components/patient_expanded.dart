@@ -5,7 +5,10 @@ import 'package:android/models/patient.dart';
 import 'package:android/themes/themes.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'appointment_expanded.dart';
 
 class PatientExpanded extends StatelessWidget {
   final Patient patient;
@@ -192,8 +195,14 @@ class PatientExpanded extends StatelessWidget {
                     child: Card(
                       color: getColor(patient.appointments[index]),
                       child: ListTile(
-                        title: Text(DateFormat('dd/MM/yyyy').format(patient.appointments[index].date))                      
-                      )
+                        title: Text(DateFormat('dd/MM/yyyy').format(patient.appointments[index].date)),
+                        onTap: () => {
+                          showMaterialModalBottomSheet(
+                            context: context,
+                            builder: (context) => AppointmentExpanded(appointment: patient.appointments[index]),
+                          )
+                        },
+                      ),
                     )
                   ),
                 );
