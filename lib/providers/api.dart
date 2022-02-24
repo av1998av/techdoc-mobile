@@ -15,8 +15,8 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart';
 
 class Api{
-  static const String baseUrl = 'http://10.0.2.2:3000/';
-  // static const String baseUrl = 'https://techdoc-mathan.herokuapp.com/';
+  // static const String baseUrl = 'http://10.0.2.2:3000/';
+  static const String baseUrl = 'https://techdoc-mathan.herokuapp.com/';
   
   static Future<CustomHttpResponse> loginUser(String username, String password) async {
     var body = {
@@ -265,7 +265,7 @@ class Api{
     });
     var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if (response.statusCode == 200){
-      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], DateFormat('yyyy-MM-dd hh:mm:ss').parse(appointment['datetime']), appointment['Prescription']?['fileLink'], appointment['notes'], appointment['files'] != null ? appointment['files'].toString().split(',') : [],appointment['Patient']['phone'] ?? appointment['Patient']['email'],appointment['Patient']['phone'] !=null ? 'phone' : 'email')).toList();
+      appointments = (json.decode(response.body)['appointments'] as List).map((appointment) => Appointment(appointment['id'],appointment['Patient']['name'], appointment['Patient']['id'], appointment['status'], DateFormat('yyyy-MM-ddThh:mm:ss.000Z').parse(appointment['datetime']), appointment['Prescription']?['fileLink'], appointment['notes'], appointment['files'] != null ? appointment['files'].toString().split(',') : [],appointment['Patient']['phone'] ?? appointment['Patient']['email'],appointment['Patient']['phone'] !=null ? 'phone' : 'email')).toList();
       customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,appointments);
     }
     else{

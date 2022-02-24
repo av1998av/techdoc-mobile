@@ -267,7 +267,8 @@ class AppointmentsSummaryView extends StatelessWidget {
                                             HexColor("#8A98E8"),
                                             HexColor("#8A98E8")
                                           ],
-                                          angle: ((completed + cancelled)/total)*360),
+                                          angle: total > 0 ? ((completed + cancelled)/total)*360 : 360
+                                      ),
                                       child: SizedBox(
                                         width: 108,
                                         height: 108,
