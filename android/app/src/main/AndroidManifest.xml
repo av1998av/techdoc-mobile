@@ -19,7 +19,7 @@
       </intent>
     </queries>
    <application
-        android:label="Dental Routine"
+        android:label="Dr.Mathan's dentistry"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
