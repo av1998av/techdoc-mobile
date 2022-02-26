@@ -154,163 +154,167 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
     preferredCommuncationController.text = patient.preferredCommunication;
     heightController.text = patient.height?.toString() ?? '';
     weightController.text = patient.weight?.toString() ?? '';
-    showDialog(
+    await showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          scrollable: true,
-          title: Text('Update Patient ' + patient.name),
-          content: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Form(
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',                
-                  ),
+      builder: (context) {
+        return StatefulBuilder(builder: ((context, setState) {
+          return AlertDialog(
+            scrollable: true,
+            title: Text('Update Patient ' + patient.name),
+            content: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Form(
+                child: Column(
+                  children: <Widget>[
+                    TextFormField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',                
+                      ),
+                    ),
+                    TextFormField(
+                      controller: dobController,
+                      decoration: const InputDecoration(
+                        labelText: 'D.O.B'
+                      ),
+                      onTap: () async {
+                        DateTime pickedDate = (await showDatePicker(
+                          context: context, 
+                          firstDate: DateTime(1900),
+                          initialDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                        ))!;
+                        if(pickedDate != null ){
+                          String dob = DateFormat('dd/MM/yyyy').format(pickedDate);
+                          dobController.text = dob;
+                        }
+                      },
+                    ),                
+                    SizedBox(
+                      height: 10,
+                    ),
+                    DropdownButton<String>(
+                      isExpanded: true,
+                      value: bloodGroup,
+                      hint: Text("Blood Group"),
+                      style: const TextStyle(color: Colors.black54,fontSize: 17),
+                      underline: Container(                    
+                        height: 1,
+                        color: Colors.black54,
+                      ),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          bloodGroup = newValue!;
+                        });                    
+                      },
+                      items: <String>['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),                
+                    DropdownButton<String>(
+                      isExpanded: true,
+                      value: gender,
+                      hint: Text("Gender"),
+                      style: const TextStyle(color: Colors.black54,fontSize: 17),
+                      underline: Container(                    
+                        height: 1,
+                        color: Colors.black54,
+                      ),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          print(newValue);
+                          gender = newValue!;
+                        });                    
+                      },
+                      items: <String>['male', 'female', 'others'].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    TextFormField(
+                      controller: phoneController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Phone',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: allergiesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Allergies',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: notesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Notes',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: heightController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Height',
+                      ),
+                    ),
+                    TextFormField(
+                      controller: weightController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Weight',
+                      ),
+                    ),
+                  ],
                 ),
-                TextFormField(
-                  controller: dobController,
-                  decoration: const InputDecoration(
-                    labelText: 'D.O.B'
-                  ),
-                  onTap: () async {
-                    DateTime pickedDate = (await showDatePicker(
-                      context: context, 
-                      firstDate: DateTime(1900),
-                      initialDate: DateTime.now(),
-                      lastDate: DateTime(2100),
-                    ))!;
-                    if(pickedDate != null ){
-                      String dob = DateFormat('dd/MM/yyyy').format(pickedDate);
-                      dobController.text = dob;
-                    }
-                  },
-                ),                
-                SizedBox(
-                  height: 10,
-                ),
-                DropdownButton<String>(
-                  isExpanded: true,
-                  value: bloodGroup,
-                  hint: Text("Blood Group"),
-                  style: const TextStyle(color: Colors.black54,fontSize: 17),
-                  underline: Container(                    
-                    height: 1,
-                    color: Colors.black54,
-                  ),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      bloodGroup = newValue!;
-                    });                    
-                  },
-                  items: <String>['Blood Group','O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-                DropdownButton<String>(
-                  isExpanded: true,
-                  value: gender,
-                  hint: Text("Gender"),
-                  style: const TextStyle(color: Colors.black54,fontSize: 17),
-                  underline: Container(                    
-                    height: 1,
-                    color: Colors.black54,
-                  ),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      gender = newValue!;
-                    });                    
-                  },
-                  items: <String>['male', 'female', 'others'].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-                TextFormField(
-                  controller: phoneController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone',
-                  ),
-                ),
-                TextFormField(
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                  ),
-                ),
-                TextFormField(
-                  controller: allergiesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Allergies',
-                  ),
-                ),
-                TextFormField(
-                  controller: notesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes',
-                  ),
-                ),
-                TextFormField(
-                  controller: heightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Height',
-                  ),
-                ),
-                TextFormField(
-                  controller: weightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Weight',
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-            ),
-            onPressed: () async {
-              String name = nameController.text;
-              String? dob = dobController.text != '' ? dobController.text : null;
-              String? bloodGroupSelected = bloodGroup;
-              String? genderSelected = gender;
-              String? phone = phoneController.text != '' ? phoneController.text : null;
-              String? email = emailController.text != '' ? emailController.text : null;
-              String? allergies = allergiesController.text != '' ? allergiesController.text : null;
-              String? notes = notesController.text != '' ? notesController.text : null;
-              String? preferredCommunication = phone != '' ? 'phone' : 'email';
-              int? height = heightController.text != '' ? int.parse(heightController.text) : null;
-              int? weight = weightController.text != '' ? int.parse(weightController.text) : null;
-              Patient updatedPatient = Patient(patient.id,name, dob, bloodGroupSelected, genderSelected, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
-              if (name != ''){
-                Navigator.pop(context);
-                await updatePatient(updatedPatient);
-              }
-            },
-            child: const Text('Submit'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            }, 
-            child: const Text('Cancel')
-          )
-        ],
-      );
-    });
+            actions: [
+              TextButton(
+                style: ButtonStyle(
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                ),
+                onPressed: () async {
+                  String name = nameController.text;
+                  String? dob = dobController.text != '' ? dobController.text : null;
+                  String? bloodGroupSelected = bloodGroup;
+                  String? genderSelected = gender;
+                  String? phone = phoneController.text != '' ? phoneController.text : null;
+                  String? email = emailController.text != '' ? emailController.text : null;
+                  String? allergies = allergiesController.text != '' ? allergiesController.text : null;
+                  String? notes = notesController.text != '' ? notesController.text : null;
+                  String? preferredCommunication = phone != '' ? 'phone' : 'email';
+                  int? height = heightController.text != '' ? int.parse(heightController.text) : null;
+                  int? weight = weightController.text != '' ? int.parse(weightController.text) : null;
+                  Patient updatedPatient = Patient(patient.id,name, dob, bloodGroupSelected, genderSelected, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
+                  if (name != ''){
+                    Navigator.pop(context);
+                    await updatePatient(updatedPatient);
+                  }
+                },
+                child: const Text('Submit'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                }, 
+                child: const Text('Cancel')
+              )
+            ],
+          );
+        }));
+      }
+    );
   }
 
 
