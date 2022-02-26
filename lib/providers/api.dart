@@ -15,8 +15,8 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart';
 
 class Api{
-  // static const String baseUrl = 'http://10.0.2.2:3000/';
-  static const String baseUrl = 'https://techdoc-mathan.herokuapp.com/';
+  static const String baseUrl = 'http://10.0.2.2:3000/';
+  // static const String baseUrl = 'https://techdoc-mathan.herokuapp.com/';
   
   static Future<CustomHttpResponse> loginUser(String username, String password) async {
     var body = {

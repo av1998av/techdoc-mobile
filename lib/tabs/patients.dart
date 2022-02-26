@@ -144,16 +144,16 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
 
   showUpdateDialog(Patient patient) async {
     nameController.text = patient.name;
-    dobController.text = patient.dob;
-    bloodGroup = patient.bloodGroup;
+    dobController.text = patient.dob ?? '';
+    bloodGroup = patient.bloodGroup!;
     gender = patient.gender;
     phoneController.text = patient.phone ?? '';
     emailController.text = patient.email ?? '';
     allergiesController.text = patient.allergies ?? '';
     notesController.text = patient.notes ?? '';
     preferredCommuncationController.text = patient.preferredCommunication;
-    heightController.text = patient.height.toString();
-    weightController.text = patient.weight.toString();
+    heightController.text = patient.height?.toString() ?? '';
+    weightController.text = patient.weight?.toString() ?? '';
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -284,16 +284,16 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
             ),
             onPressed: () async { 
               String name = nameController.text;
-              String dob = dobController.text;
-              String bloodGroupSelected = bloodGroup;
-              String genderSelected = gender;
-              String phone = phoneController.text;
-              String email = emailController.text;
-              String allergies = allergiesController.text;
-              String notes = notesController.text;
+              String? dob = dobController.text != '' ? dobController.text : null;
+              String? bloodGroupSelected = bloodGroup;
+              String? genderSelected = gender;
+              String? phone = phoneController.text;
+              String? email = emailController.text;
+              String? allergies = allergiesController.text;
+              String? notes = notesController.text;
               String preferredCommunication = patient.preferredCommunication;
-              int height = int.parse(heightController.text);
-              int weight = int.parse(weightController.text);
+              int? height = heightController.text != '' ? int.parse(heightController.text) : null;
+              int? weight = weightController.text != '' ? int.parse(weightController.text) : null;
               Patient updatedPatient = Patient(patient.id,name, dob, bloodGroupSelected, genderSelected, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
               if (name != ''){
                 Navigator.pop(context);
@@ -446,16 +446,16 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                 ),
                 onPressed: () async { 
                   String name = nameController.text;
-                  String dob = dobController.text;
-                  String bloodGroupSelected = bloodGroup;
-                  String genderSelected = gender;
-                  String phone = phoneController.text;
-                  String email = emailController.text;
-                  String allergies = allergiesController.text;
-                  String notes = notesController.text;
-                  String preferredCommunication = phone != '' ? 'phone' : 'email';
-                  int height = int.parse(heightController.text);
-                  int weight = int.parse(weightController.text);
+                  String? dob = dobController.text;
+                  String? bloodGroupSelected = bloodGroup;
+                  String? genderSelected = gender;
+                  String? phone = phoneController.text;
+                  String? email = emailController.text;
+                  String? allergies = allergiesController.text;
+                  String? notes = notesController.text;
+                  String? preferredCommunication = phone != '' ? 'phone' : 'email';
+                  int? height = heightController.text != '' ? int.parse(heightController.text) : null;
+                  int? weight = weightController.text != '' ? int.parse(weightController.text) : null;
                   Patient patient = Patient('fakeId',name, dob, bloodGroupSelected, genderSelected, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
                   if (name != ''){
                     Navigator.pop(context);

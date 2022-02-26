@@ -51,7 +51,7 @@ class PatientExpanded extends StatelessWidget {
           DataTable(
             columns: <DataColumn>[
               DataColumn(
-                label: Text(patient.bloodGroup,
+                label: Text(patient.bloodGroup != null && patient.bloodGroup != 'Blood Group' ? patient.bloodGroup! + '' : '',
                   style: TextStyle(
                     fontSize: 25
                   ),
@@ -61,7 +61,7 @@ class PatientExpanded extends StatelessWidget {
                 label: patient.gender == 'male' ? Icon(Icons.male, color: Colors.blue, size: 25) : Icon(Icons.female, color: Colors.pink, size: 25)
               ),
               DataColumn(
-                label: Text(patient.dob,
+                label: Text(patient.dob  ?? '',
                   style: TextStyle(
                     fontSize: 25
                   ),
