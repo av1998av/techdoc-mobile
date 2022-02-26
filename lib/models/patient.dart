@@ -5,7 +5,7 @@ class Patient {
   final String name;
   final String? dob;
   final String? bloodGroup;
-  final String gender;
+  final String? gender;
   final String? phone;
   final String? email;
   final String? allergies;

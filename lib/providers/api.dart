@@ -15,8 +15,8 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart';
 
 class Api{
-  static const String baseUrl = 'http://10.0.2.2:3000/';
-  // static const String baseUrl = 'https://techdoc-mathan.herokuapp.com/';
+  // static const String baseUrl = 'http://10.0.2.2:3000/';
+  static const String baseUrl = 'https://techdoc-mathan.herokuapp.com/';
   
   static Future<CustomHttpResponse> loginUser(String username, String password) async {
     var body = {
@@ -126,7 +126,7 @@ class Api{
         "allergies" : patient.allergies,
         "notes" : patient.notes,
         "height" : patient.height,
-        "weight" : patient.height,
+        "weight" : patient.weight,
       };
     }
     CustomHttpResponse customResponse;
@@ -152,7 +152,7 @@ class Api{
     });
     var status = json.decode(response.body)['result'] == 'Success' ? true : false;
     if(response.statusCode == 200){
-      patients = (json.decode(response.body)['patients'] as List).map((patient) => Patient(patient['id'], patient['name'], patient['dob'], patient['bloodGroup'], patient['gender'], patient['phone'],patient['email'], patient['allergies'], patient['notes'], patient['preferredCommunication'], patient['height'], patient['weight'], (patient['Appointments'] as List).map((appointment) => Appointment(appointment['id'],patient['name'], patient['id'], appointment['status'], DateFormat("yyyy-MM-dd hh:mm:ss").parse(appointment['datetime']), appointment?['Prescription']?['fileLink'], appointment['notes'], appointment['files'] != null ? appointment['files'].toString().split(',') : [],patient['phone'] ?? patient['email'],patient['preferredCommunication'])).toList())).toList();
+      patients = (json.decode(response.body)['patients'] as List).map((patient) => Patient(patient['id'], patient['name'], patient['dob'], patient['bloodGroup'], patient['gender'], patient['phone'],patient['email'], patient['allergies'], patient['notes'], patient['preferredCommunication'], patient['height'], patient['weight'], (patient['Appointments'] as List).map((appointment) => Appointment(appointment['id'],patient['name'], patient['id'], appointment['status'], DateFormat("yyyy-MM-ddThh:mm:ss.000Z").parse(appointment['datetime']), appointment?['Prescription']?['fileLink'], appointment['notes'], appointment['files'] != null ? appointment['files'].toString().split(',') : [],patient['phone'] ?? patient['email'],patient['preferredCommunication'])).toList())).toList();
       print(patients);
       customResponse = CustomHttpResponse(json.decode(response.body)['message'],status,patients);
     }
@@ -189,7 +189,7 @@ class Api{
         "allergies" : patient.allergies,
         "notes" : patient.notes,
         "height" : patient.height,
-        "weight" : patient.height,
+        "weight" : patient.weight,
       };
     }
     else if(patient.preferredCommunication == 'phone'){
@@ -203,7 +203,7 @@ class Api{
         "allergies" : patient.allergies,
         "notes" : patient.notes,
         "height" : patient.height,
-        "weight" : patient.height,
+        "weight" : patient.weight,
       };
     }
     CustomHttpResponse customResponse;

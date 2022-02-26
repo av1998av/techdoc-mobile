@@ -27,8 +27,8 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
   bool isLoading = false;
   final nameController = TextEditingController();
   final dobController = TextEditingController();
-  String bloodGroup = 'Blood Group';
-  String gender = 'Gender';
+  String? bloodGroup;
+  String? gender;
   final genderController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
@@ -145,7 +145,7 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
   showUpdateDialog(Patient patient) async {
     nameController.text = patient.name;
     dobController.text = patient.dob ?? '';
-    bloodGroup = patient.bloodGroup!;
+    bloodGroup = patient.bloodGroup;
     gender = patient.gender;
     phoneController.text = patient.phone ?? '';
     emailController.text = patient.email ?? '';
@@ -227,7 +227,7 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                       gender = newValue!;
                     });                    
                   },
-                  items: <String>['Gender','male', 'female', 'others'].map<DropdownMenuItem<String>>((String value) {
+                  items: <String>['male', 'female', 'others'].map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -282,16 +282,16 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
             style: ButtonStyle(
               foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
             ),
-            onPressed: () async { 
+            onPressed: () async {
               String name = nameController.text;
               String? dob = dobController.text != '' ? dobController.text : null;
               String? bloodGroupSelected = bloodGroup;
               String? genderSelected = gender;
-              String? phone = phoneController.text;
-              String? email = emailController.text;
-              String? allergies = allergiesController.text;
-              String? notes = notesController.text;
-              String preferredCommunication = patient.preferredCommunication;
+              String? phone = phoneController.text != '' ? phoneController.text : null;
+              String? email = emailController.text != '' ? emailController.text : null;
+              String? allergies = allergiesController.text != '' ? allergiesController.text : null;
+              String? notes = notesController.text != '' ? notesController.text : null;
+              String? preferredCommunication = phone != '' ? 'phone' : 'email';
               int? height = heightController.text != '' ? int.parse(heightController.text) : null;
               int? weight = weightController.text != '' ? int.parse(weightController.text) : null;
               Patient updatedPatient = Patient(patient.id,name, dob, bloodGroupSelected, genderSelected, phone, email, allergies, notes, preferredCommunication, height, weight,[]);
@@ -368,7 +368,7 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                           bloodGroup = newValue!;
                         });                    
                       },
-                      items: <String>['Blood Group','O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map<DropdownMenuItem<String>>((String value) {
+                      items: <String>['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -378,7 +378,7 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                     DropdownButton<String>(
                       isExpanded: true,
                       value: gender,
-                      hint: Text("Blood Group"),
+                      hint: Text("Gender"),
                       style: const TextStyle(color: Colors.black54,fontSize: 17),
                       underline: Container(                    
                         height: 1,
@@ -389,7 +389,7 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                           gender = newValue!;
                         });                    
                       },
-                      items: <String>['Gender','male', 'female', 'others'].map<DropdownMenuItem<String>>((String value) {
+                      items: <String>['male', 'female', 'others'].map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -446,13 +446,13 @@ class PatientsTabState extends State<PatientsTab> with TickerProviderStateMixin 
                 ),
                 onPressed: () async { 
                   String name = nameController.text;
-                  String? dob = dobController.text;
+                  String? dob = dobController.text != '' ? dobController.text : null;
                   String? bloodGroupSelected = bloodGroup;
                   String? genderSelected = gender;
-                  String? phone = phoneController.text;
-                  String? email = emailController.text;
-                  String? allergies = allergiesController.text;
-                  String? notes = notesController.text;
+                  String? phone = phoneController.text != '' ? phoneController.text : null;
+                  String? email = emailController.text != '' ? emailController.text : null;
+                  String? allergies = allergiesController.text != '' ? allergiesController.text : null;
+                  String? notes = notesController.text != '' ? notesController.text : null;
                   String? preferredCommunication = phone != '' ? 'phone' : 'email';
                   int? height = heightController.text != '' ? int.parse(heightController.text) : null;
                   int? weight = weightController.text != '' ? int.parse(weightController.text) : null;

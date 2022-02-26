@@ -58,7 +58,7 @@ class PatientExpanded extends StatelessWidget {
                 ),
               ),
               DataColumn(
-                label: patient.gender == 'male' ? Icon(Icons.male, color: Colors.blue, size: 25) : Icon(Icons.female, color: Colors.pink, size: 25)
+                label: patient.gender == 'male' ? Icon(Icons.male, color: Colors.blue, size: 25) : patient.gender == 'female' ? Icon(Icons.female, color: Colors.pink, size: 25) : Text('')
               ),
               DataColumn(
                 label: Text(patient.dob  ?? '',
